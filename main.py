@@ -8,10 +8,14 @@ try:
     conexion = psql()
     if conexion: # Verificar si la conexión está abierta
         print("Conexión exitosa a la base de datos PostgreSQL")
-        ponderacion_base = generacion_data_base_mt5(conexion)
-        ponderacion_calculada = calculo_ponderaciones(ponderacion_base)
-        print(f'\nPONDERACION BASE\n******\n{ponderacion_base}\n******\n\n')
-        print(f'\nPONDERACION CALCULADA\n******\n{ponderacion_calculada}\n******\n\n')
+        ponderacion_base = func_generacion_data_base_mt5(conexion)
+        precios = func_obtener_precio(conexion)
+        nuevas_ponderaciones = func_ponderaciones_campos_no_calculados(ponderacion_base)
+        nuevas_ponderaciones = func_ponderaciones_campos_calculados(nuevas_ponderaciones)
+        
+        print(precios)
+        
+
 except psql().Error as e:
     print("Error al conectar a la base de datos PostgreSQL: {}".format(e))
 finally:

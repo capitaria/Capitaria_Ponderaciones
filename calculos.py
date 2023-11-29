@@ -9,7 +9,8 @@ ponderacion_base = {
         'spread_premium': 1245.0,
         'swap_compra': -2.9,
         'swap_venta': -2.9
-        },
+        }
+    ,
     'USDCLP': {
         'path': 'Forex\\CLP\\USDCLP',
         'moneda_base': 'USD',
@@ -23,40 +24,108 @@ ponderacion_base = {
         }
     }
 
-def tipo_instrumento(valor):
-    return(valor)
+precios = [('USDCLP', 867.8), ('T.NINTENDO', 6824.0)]
 
-def calculo_ponderaciones(ponderacion_base):
+def func_tipo_instrumento(moneda, path):
+
+    if 'ADR' in path:
+        tipo_instrumento = 'ADR'
+    elif 'Commodities' in path:
+        tipo_instrumento = 'COMMODITIES'
+    elif 'Criptomonedas' in path:
+        tipo_instrumento = 'CRIPTOMONEDAS'
+    elif 'ETF' in path:
+        tipo_instrumento = 'ETF'
+    elif 'Indices' in path:
+        tipo_instrumento = 'INDICES'
+    elif 'Forex' in path:
+        tipo_instrumento = 'FOREX'
+    elif 'Acciones' in path and 'JPY' in moneda:
+        tipo_instrumento = 'ACCIONES TOKIO'
+    elif 'Acciones' in path and 'CAD' in moneda:
+        tipo_instrumento = 'ACCIONES CANADA'
+    elif 'Acciones' in path and 'EUR' in moneda:
+        tipo_instrumento = 'ACCIONES EUROPEAS'
+    elif 'Acciones' in path and 'PENNY' in moneda:
+        tipo_instrumento = 'ACCIONES EUROPEAS LONDRES'
+    elif 'Acciones' in path and 'USD' in moneda:
+        tipo_instrumento = 'ACCIONES USA'
+    elif 'Acciones' in path and 'CLP' in moneda:
+        tipo_instrumento = 'CFD CHILE'
+    else:
+        tipo_instrumento = 'N/A'
+    
+    return tipo_instrumento
+
+
+def func_tipo(path):
+
+    if 'adr' in path.lower():
+        tipo = 'ADR'
+    elif 'commodities' in path.lower():
+        tipo = 'COMMODITIES'
+    elif 'criptomonedas' in path.lower():
+        tipo = 'CRIPTO'
+    elif 'etf' in path.lower():
+        tipo = 'ETF'
+    elif 'indices' in path.lower():
+        tipo = 'INDICES'
+    elif 'forex' in path.lower():
+        tipo = 'FOREX'
+    elif 'acciones' in path.lower():
+        tipo = 'ACCIONES'
+    else:
+        tipo = 'N/A'
+        
+    return tipo
+
+
+def func_precio(instrumento,precios):
+    print(instrumento,precios)
+    #todo - sacar el precio cunado el instrumento sea el mismo y devolver el precio
+
+
+def func_ponderaciones_campos_no_calculados(ponderacion_base):
+    # Se agrega los campos no calculados (path, tatamano_contrato, moneda_calculo, spread_go, spread_pro, spread_vip y poderacion_go)
     nuevas_ponderaciones = dict()
 
     for instrumento in ponderacion_base:
         nuevas_ponderaciones[instrumento] = {}
 
         for key, valor in ponderacion_base[instrumento].items():
-            if key == 'tamanio_1_lote':
+            if key == 'path':
+                nuevas_ponderaciones[instrumento]['path'] = valor
+            elif key == 'tamanio_1_lote':
                 nuevas_ponderaciones[instrumento]['tamano_contrato'] = valor
             elif key == 'moneda_base':
                 nuevas_ponderaciones[instrumento]['moneda_calculo'] = valor
-            else:
-                nuevas_ponderaciones[instrumento]['tipo_instrumento'] = None # Se calcula
-                nuevas_ponderaciones[instrumento]['tipo'] = None # Se calcula
-                nuevas_ponderaciones[instrumento]['precio'] = None # Se calcula
-                nuevas_ponderaciones[instrumento]['monto_usd'] = None # Se calcula
-                nuevas_ponderaciones[instrumento]['poderacion_pro'] = None # Se calcula
-                nuevas_ponderaciones[instrumento]['poderacion_vip'] = None # Se calcula
-                
+            elif key == 'spread_pro':
+                nuevas_ponderaciones[instrumento]['spread_go'] = valor
+            elif key == 'spread_premium':
+                nuevas_ponderaciones[instrumento]['spread_pro'] = valor
+                nuevas_ponderaciones[instrumento]['spread_vip'] = valor
+
+            nuevas_ponderaciones[instrumento]['poderacion_go'] = 1
 
     return nuevas_ponderaciones
 
-print(calculo_ponderaciones(ponderacion_base))
+
+def func_ponderaciones_campos_calculados(nuevas_ponderaciones,precios):
+    # Se agrega los campos calculados (tipo_instrumento, tipo)
+
+    #* nuevas_ponderaciones[instrumento]['precio'] = None # Se calcula
+    #* nuevas_ponderaciones[instrumento]['monto_usd'] = None # Se calcula
+    #* nuevas_ponderaciones[instrumento]['poderacion_pro'] = None # Se calcula
+    #* nuevas_ponderaciones[instrumento]['poderacion_vip'] = None # Se calcula
+
+    for instrumento in nuevas_ponderaciones:
+        # nuevas_ponderaciones[instrumento]['tipo_instrumento'] = func_tipo_instrumento(nuevas_ponderaciones[instrumento]['moneda_calculo'],nuevas_ponderaciones[instrumento]['path'])
+        # nuevas_ponderaciones[instrumento]['tipo'] = func_tipo(nuevas_ponderaciones[instrumento]['path'])
+        nuevas_ponderaciones[instrumento]['precio'] = func_precio(instrumento,precios)
+
+    #return nuevas_ponderaciones
 
 
-
-
-   
-        #         'tamano_contrato' : None,
-        #         'moneda_calculo' : None,
-        #         'spread_go' : None,
-        #         'spread_pro' : None,
-        #         'spread_vip' : None,
-        #         'poderacion_go' : None,
+data = func_ponderaciones_campos_no_calculados(ponderacion_base)
+print(func_ponderaciones_campos_calculados(data,precios))
+# print(precios)

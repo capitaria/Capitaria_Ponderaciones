@@ -1,6 +1,6 @@
 from con.connection import psql
 
-def generacion_data_base_mt5(conexion):
+def func_generacion_data_base_mt5(conexion):
     cursor = conexion.cursor() # Crear cursor
     # Query a postgreSQL
     query_mt5 = f"""
@@ -61,7 +61,7 @@ def generacion_data_base_mt5(conexion):
     # ('USDCLP', 'T.NINTENDO' ,'#TSLA','TSE.WEED','#ADR_SQM','WTI','UK100','ETF_XLY')
 
         
-def obtener_precio(conexion):
+def func_obtener_precio(conexion):
     cursor = conexion.cursor() # Crear cursor
     # Query a postgreSQL
     precioxsymbol = f"""
@@ -77,13 +77,4 @@ def obtener_precio(conexion):
     cursor.execute(precioxsymbol) # Ejecuta la query
     precioxsymbol = cursor.fetchall()
 
-    precios = dict()
-
-    for item in precioxsymbol:
-        symbol = item[0]
-        precio = item[1]
-        precios[symbol] = {
-            'precio' : precio,
-            }
-
-    return precios
+    return precioxsymbol
