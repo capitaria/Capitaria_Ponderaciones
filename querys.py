@@ -1,8 +1,8 @@
 from con.connection import psql
 
 def func_generacion_data_base_mt5(conexion):
-    cursor = conexion.cursor() # Crear cursor
-    # Query a postgreSQL
+    # Obtiene la base de los datos para despues calcular los datos
+    cursor = conexion.cursor()
     query_mt5 = f"""
     select
         ms."Symbol" as nemo,
@@ -57,13 +57,10 @@ def func_generacion_data_base_mt5(conexion):
 
     return ponderaciones
     
-
-    # ('USDCLP', 'T.NINTENDO' ,'#TSLA','TSE.WEED','#ADR_SQM','WTI','UK100','ETF_XLY')
-
         
 def func_obtener_precio(conexion):
-    cursor = conexion.cursor() # Crear cursor
-    # Query a postgreSQL
+    # Obtiene los precios segun cada instrumento
+    cursor = conexion.cursor()
     precioxsymbol = f"""
     select
         trim(rp.instrumento) as symbol,
@@ -78,3 +75,56 @@ def func_obtener_precio(conexion):
     precioxsymbol = cursor.fetchall()
 
     return precioxsymbol
+
+def func_monto_moneda_usd(conexion):
+    # Obtiene motod dolarizado segun la moneda
+    cursor = conexion.cursor()
+    monto_moneda_a_usd = f"""
+    select
+        usd_price as usdclp,
+        pen_price as usdpen,
+        usdcad,
+        eurusd,
+        nzdusd,
+        audusd,
+        usdjpy,
+        gbpusd,
+        usdchf,
+        usdmxn
+    from
+        processes.pr_fiscal_period 
+    order by
+        fecha_inicio desc
+        fetch first 1 row only
+    """
+    cursor.execute(monto_moneda_a_usd) # Ejecuta la query
+    monto_a_usd = cursor.fetchall()
+
+    calculo_a_usd = dict()
+    
+    for item in monto_a_usd:
+        usdclp = item[0]
+        usdpen = item[1]
+        usdcad = item[2]
+        eurusd = item[3]
+        nzdusd = item[4]
+        audusd = item[5]
+        usdjpy = item[6]
+        gbpusd = item[7]
+        usdchf = item[8]
+        usdmxn = item[9]
+        calculo_a_usd = {
+            'usdclp' : round(usdclp,5),
+            'usdpen' : round(usdpen,5),
+            'usdcad' : round(usdcad,5),
+            'eurusd' : round(eurusd,5),
+            'nzdusd' : round(nzdusd,5),
+            'audusd' : round(audusd,5),
+            'usdjpy' : round(usdjpy,5),
+            'gbpusd' : round(gbpusd,5),
+            'usdchf' : round(usdchf,5),
+            'usdmxn' : round(usdmxn,5),
+            # nota: tambien se puede ocupar 'usdmxn' : '{:.5f}'.format(usdmxn), pero la diferencia esta en que si o si te deja los 5 decimales y si no los tiene, los rellena con 0
+            }
+        
+        return calculo_a_usd
