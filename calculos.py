@@ -1,33 +1,3 @@
-# ponderacion_base = {
-#     'T.NINTENDO': {
-#         'path': 'CFD Acciones\\Tokio\\T.NINTENDO',
-#         'moneda_base': 'JPY',
-#         'tamanio_1_lote': 50,
-#         'monto_operacion_min': 0.1,
-#         'monto_operacion_max': 60.0,
-#         'spread_pro': 1250.0,
-#         'spread_premium': 1245.0,
-#         'swap_compra': -2.9,
-#         'swap_venta': -2.9
-#         }
-#     ,
-#     'USDCLP': {
-#         'path': 'Forex\\CLP\\USDCLP',
-#         'moneda_base': 'USD',
-#         'tamanio_1_lote': 100000,
-#         'monto_operacion_min': 0.1,
-#         'monto_operacion_max': 10.0,
-#         'spread_pro': 0,
-#         'spread_premium': -1.0,
-#         'swap_compra': -9.0,
-#         'swap_venta': 3.5
-#         }
-#     }
-
-# precios = [('USDCLP', 867.8), ('T.NINTENDO', 6824.0)]
-
-# monto_a_usd = {'usdclp': '868.35', 'usdpen': '3.731', 'usdcad': '1.363', 'eurusd': '1.09432', 'nzdusd': '0.6086', 'audusd': '0.6587', 'usdjpy': '149.45', 'gbpusd': '1.2609', 'usdchf': '0.8818', 'usdmxn': '17.1138'}
-
 def func_tipo_instrumento(moneda, path):
     # Agrega el Tipo de Instrumento, tomando la moneda y el Path
     if 'ADR' in path:
@@ -161,17 +131,17 @@ def func_ponderaciones_campos_no_calculados(ponderacion_base):
             elif key == 'moneda_base':
                 nuevas_ponderaciones[instrumento]['moneda_calculo'] = valor
             elif key == 'spread_pro':
-                nuevas_ponderaciones[instrumento]['spread_go'] = valor
+                nuevas_ponderaciones[instrumento]['spread_go'] = int(valor)
             elif key == 'spread_premium':
-                nuevas_ponderaciones[instrumento]['spread_pro'] = valor
-                nuevas_ponderaciones[instrumento]['spread_vip'] = valor
+                nuevas_ponderaciones[instrumento]['spread_pro'] = int(valor)
+                nuevas_ponderaciones[instrumento]['spread_vip'] = int(valor)
 
             nuevas_ponderaciones[instrumento]['poderacion_go'] = 1
 
     return nuevas_ponderaciones
 
 
-def func_ponderaciones_campos_calculados(nuevas_ponderaciones,precios,monto_a_usd):
+def func_ponderaciones_campos_calculados(nuevas_ponderaciones,precios,calculo_a_usd):
     #* Se agrega los campos calculados (tipo_instrumento, tipo, precio, monto_usd, poderacion_pro y poderacion_vip)
     for instrumento in nuevas_ponderaciones:
         nuevas_ponderaciones[instrumento]['tipo_instrumento'] = func_tipo_instrumento(
@@ -182,14 +152,10 @@ def func_ponderaciones_campos_calculados(nuevas_ponderaciones,precios,monto_a_us
         nuevas_ponderaciones[instrumento]['precio'] = func_precio(
             instrumento,precios)
         nuevas_ponderaciones[instrumento]['monto_usd'] = func_monto_usd(
-            nuevas_ponderaciones[instrumento]['moneda_calculo'],monto_a_usd)
+            nuevas_ponderaciones[instrumento]['moneda_calculo'],calculo_a_usd)
         nuevas_ponderaciones[instrumento]['poderacion_pro'] = func_ponderacion(
             nuevas_ponderaciones[instrumento]['spread_pro'],
             nuevas_ponderaciones[instrumento]['spread_go'])
         nuevas_ponderaciones[instrumento]['poderacion_vip'] = nuevas_ponderaciones[instrumento]['poderacion_pro']
 
     return nuevas_ponderaciones
-
-
-# data = func_ponderaciones_campos_no_calculados(ponderacion_base)
-# print(func_ponderaciones_campos_calculados(data,precios,monto_a_usd))

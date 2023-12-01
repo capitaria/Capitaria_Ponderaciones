@@ -1,9 +1,34 @@
 from con.connection import psql
 
-def func_generacion_data_base_mt5(conexion):
+#& SELECT
+def func_sel_instrumentos_faltantes(conexion):
+    # Obtiene solo los instrumentos faltantes
+    cursor = conexion.cursor()
+    query_instrumentos_faltantes = f"""
+        select 
+            trim(rp.instrumento) as instrumento
+        from
+            reports.rp_ponderacionxsymbol rp 
+        where 
+            rp.tipo_instrumento is null
+            and (rp.instrumento not like '%x0%'
+            and rp.instrumento not like '%x2%'
+            and rp.instrumento not like '%x4%')
+        order by
+            rp.instrumento asc
+    """
+    cursor.execute(query_instrumentos_faltantes)
+    query_instrumentos_faltantes = cursor.fetchall()
+
+    instrumentos_faltantes = tuple([i[0] for i in query_instrumentos_faltantes])
+
+    return instrumentos_faltantes
+
+
+def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
     # Obtiene la base de los datos para despues calcular los datos
     cursor = conexion.cursor()
-    query_mt5 = f"""
+    query_mt5_symbols = f"""
     select
         ms."Symbol" as nemo,
         ms."Path" as path,
@@ -23,11 +48,11 @@ def func_generacion_data_base_mt5(conexion):
         and ms."Path" not ilike '%Alimentadores%'
         and ms."Path" not ilike '%Provisorios%'
         and ms."Path" not ilike '%MarketExecution%'
-        and ms."Symbol" in ('USDCLP', 'T.NINTENDO')
-    """
-# ,'#TSLA','TSE.WEED','#ADR_SQM','WTI','UK100','ETF_XLY'
+        and ms."Symbol" in ('NK') -- {instrumentos_faltantes}
+    limit 1
+"""
 
-    cursor.execute(query_mt5) # Ejecuta la query
+    cursor.execute(query_mt5_symbols) # Ejecuta la query
     mt5_symbols = cursor.fetchall()
     
     ponderaciones = dict()
@@ -58,28 +83,28 @@ def func_generacion_data_base_mt5(conexion):
     return ponderaciones
     
         
-def func_obtener_precio(conexion):
+def func_sel_obtener_precio(conexion, instrumentos_faltantes):
     # Obtiene los precios segun cada instrumento
     cursor = conexion.cursor()
-    precioxsymbol = f"""
+    query_precio_x_symbol = f"""
     select
         trim(rp.instrumento) as symbol,
         rp.precio as precio
     from
         reports.rp_ponderacionxsymbol rp
     where
-        trim(rp.instrumento) in ('USDCLP', 'T.NINTENDO')
+        trim(rp.instrumento) in {instrumentos_faltantes}
     """
 #,'#TSLA','TSE.WEED','#ADR_SQM','WTI','UK100','ETF_XLY'
-    cursor.execute(precioxsymbol) # Ejecuta la query
-    precioxsymbol = cursor.fetchall()
+    cursor.execute(query_precio_x_symbol) # Ejecuta la query
+    precio_x_symbol = cursor.fetchall()
 
-    return precioxsymbol
+    return precio_x_symbol
 
-def func_monto_moneda_usd(conexion):
+def func_sel_monto_moneda_usd(conexion):
     # Obtiene motod dolarizado segun la moneda
     cursor = conexion.cursor()
-    monto_moneda_a_usd = f"""
+    query_monto_moneda_a_usd = f"""
     select
         usd_price as usdclp,
         pen_price as usdpen,
@@ -97,12 +122,12 @@ def func_monto_moneda_usd(conexion):
         fecha_inicio desc
         fetch first 1 row only
     """
-    cursor.execute(monto_moneda_a_usd) # Ejecuta la query
-    monto_a_usd = cursor.fetchall()
+    cursor.execute(query_monto_moneda_a_usd) # Ejecuta la query
+    monto_moneda_a_usd = cursor.fetchall()
 
     calculo_a_usd = dict()
     
-    for item in monto_a_usd:
+    for item in monto_moneda_a_usd:
         usdclp = item[0]
         usdpen = item[1]
         usdcad = item[2]
@@ -124,7 +149,66 @@ def func_monto_moneda_usd(conexion):
             'gbpusd' : round(gbpusd,5),
             'usdchf' : round(usdchf,5),
             'usdmxn' : round(usdmxn,5),
-            # nota: tambien se puede ocupar 'usdmxn' : '{:.5f}'.format(usdmxn), pero la diferencia esta en que si o si te deja los 5 decimales y si no los tiene, los rellena con 0
             }
         
         return calculo_a_usd
+    
+
+def func_sel_campos_rp_ponderacionxsymbol_python(conexion):
+    cursor = conexion.cursor()
+    ponderacionxsymbol_python = f"""
+        select
+            column_name
+            -- data_type
+        from
+            information_schema.columns
+        where
+        table_name = 'rp_ponderacionxsymbol_python'
+    """
+
+    cursor.execute(ponderacionxsymbol_python)
+    campos = cursor.fetchall()
+
+    campos = tuple([c[0] for c in campos])
+
+    return campos
+
+#& FIN SELECT
+
+
+#^ INSERT
+def func_ins_datos_ponderados(conexion, campos_rp_ponderacionxsymbol_python, nuevas_ponderaciones):
+    # inserta en reports.rp_ponderacionxsymbol_python
+
+    lista = list()
+    for i in nuevas_ponderaciones:
+        datos = [
+            i,
+            nuevas_ponderaciones[i]['tipo_instrumento'],
+            nuevas_ponderaciones[i]['tipo'],
+            nuevas_ponderaciones[i]['precio'],
+            nuevas_ponderaciones[i]['tamanio_contrato'],
+            nuevas_ponderaciones[i]['moneda_calculo'],
+            nuevas_ponderaciones[i]['monto_usd'],
+            nuevas_ponderaciones[i]['spread_go'],
+            nuevas_ponderaciones[i]['spread_pro'],
+            nuevas_ponderaciones[i]['spread_vip'],
+            nuevas_ponderaciones[i]['poderacion_go'],
+            nuevas_ponderaciones[i]['poderacion_pro'],
+            nuevas_ponderaciones[i]['poderacion_vip']
+        ]
+        lista.append(datos)
+
+    #todo - quede en insertar los datos a la tabla
+
+    # cursor = conexion.cursor()
+    # query_insert = f"""
+    # insert into
+    #     reports.rp_ponderacionxsymbol_python ({campos_rp_ponderacionxsymbol_python})
+    # VALUES
+    #     ({nuevas_ponderaciones})"""
+
+    # cursor.executemany(query_insert)
+    # return campos_rp_ponderacionxsymbol_python,nuevas_ponderaciones
+    
+#^ FIN INSERT
