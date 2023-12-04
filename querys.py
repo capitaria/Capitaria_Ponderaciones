@@ -48,8 +48,7 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
         and ms."Path" not ilike '%Alimentadores%'
         and ms."Path" not ilike '%Provisorios%'
         and ms."Path" not ilike '%MarketExecution%'
-        and ms."Symbol" in ('NK') -- {instrumentos_faltantes}
-    limit 1
+        and ms."Symbol" in {instrumentos_faltantes}
 """
 
     cursor.execute(query_mt5_symbols) # Ejecuta la query
@@ -92,8 +91,7 @@ def func_sel_obtener_precio(conexion, instrumentos_faltantes):
         rp.precio as precio
     from
         reports.rp_ponderacionxsymbol rp
-    where
-        trim(rp.instrumento) in {instrumentos_faltantes}
+    where trim(rp.instrumento) in {instrumentos_faltantes}
     """
 #,'#TSLA','TSE.WEED','#ADR_SQM','WTI','UK100','ETF_XLY'
     cursor.execute(query_precio_x_symbol) # Ejecuta la query
@@ -159,7 +157,6 @@ def func_sel_campos_rp_ponderacionxsymbol_python(conexion):
     ponderacionxsymbol_python = f"""
         select
             column_name
-            -- data_type
         from
             information_schema.columns
         where
@@ -179,8 +176,8 @@ def func_sel_campos_rp_ponderacionxsymbol_python(conexion):
 #^ INSERT
 def func_ins_datos_ponderados(conexion, campos_rp_ponderacionxsymbol_python, nuevas_ponderaciones):
     # inserta en reports.rp_ponderacionxsymbol_python
-
-    lista = list()
+    
+    new_ponderaciones = list()
     for i in nuevas_ponderaciones:
         datos = [
             i,
@@ -197,18 +194,72 @@ def func_ins_datos_ponderados(conexion, campos_rp_ponderacionxsymbol_python, nue
             nuevas_ponderaciones[i]['poderacion_pro'],
             nuevas_ponderaciones[i]['poderacion_vip']
         ]
-        lista.append(datos)
+        new_ponderaciones.append(tuple(datos))
+         
+    cursor = conexion.cursor()
+    
+    rp_ponderacionxsymbol_python = (
+    f"""
+    INSERT INTO reports.rp_ponderacionxsymbol_python
+    (
+        instrumento,
+        tipo_instrumento,
+        tipo,
+        precio,
+        tamano_contrato,
+        moneda_calculo,
+        monto_usd,
+        spread_go,
+        spread_pro,
+        spread_vip,
+        poderacion_go,
+        poderacion_pro,
+        poderacion_vip
+    )
+    VALUES
+    (
+        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+    )
+    """)
 
-    #todo - quede en insertar los datos a la tabla
+    cursor.executemany(rp_ponderacionxsymbol_python,new_ponderaciones)
+    conexion.commit()
+    cursor.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     # cursor = conexion.cursor()
     # query_insert = f"""
     # insert into
-    #     reports.rp_ponderacionxsymbol_python ({campos_rp_ponderacionxsymbol_python})
+    #     reports.rp_ponderacionxsymbol_python
+    #     (
+    #         {campos_rp_ponderacionxsymbol_python}
+    #     )
     # VALUES
-    #     ({nuevas_ponderaciones})"""
+    #     (
+    #         {new_ponderaciones}
+    #     )
+    #     """
 
     # cursor.executemany(query_insert)
-    # return campos_rp_ponderacionxsymbol_python,nuevas_ponderaciones
+    
     
 #^ FIN INSERT
+
+
+

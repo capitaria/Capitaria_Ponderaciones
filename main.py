@@ -13,9 +13,7 @@ try:
         precios = func_sel_obtener_precio(conexion, instrumentos_faltantes)
         nuevas_ponderaciones = func_ponderaciones_campos_no_calculados(ponderacion_base)
         nuevas_ponderaciones = func_ponderaciones_campos_calculados(nuevas_ponderaciones,precios,calculo_a_usd)
-        A,B = func_ins_datos_ponderados(conexion, campos_rp_ponderacionxsymbol_python, nuevas_ponderaciones)
-        
-        print(A,B)
+        func_ins_datos_ponderados(conexion, campos_rp_ponderacionxsymbol_python, nuevas_ponderaciones)
 except psql().Error as e:
     print("Error al conectar a la base de datos PostgreSQL: {}".format(e))
 finally:
