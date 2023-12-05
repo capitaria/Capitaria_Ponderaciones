@@ -144,18 +144,35 @@ def func_ponderaciones_campos_no_calculados(ponderacion_base):
 def func_ponderaciones_campos_calculados(nuevas_ponderaciones,precios,calculo_a_usd):
     #* Se agrega los campos calculados (tipo_instrumento, tipo, precio, monto_usd, poderacion_pro y poderacion_vip)
     for instrumento in nuevas_ponderaciones:
-        nuevas_ponderaciones[instrumento]['tipo_instrumento'] = func_tipo_instrumento(
-            nuevas_ponderaciones[instrumento]['moneda_calculo'],
-            nuevas_ponderaciones[instrumento]['path'])
-        nuevas_ponderaciones[instrumento]['tipo'] = func_tipo(
-            nuevas_ponderaciones[instrumento]['path'])
-        nuevas_ponderaciones[instrumento]['precio'] = func_precio(
-            instrumento,precios)
-        nuevas_ponderaciones[instrumento]['monto_usd'] = func_monto_usd(
-            nuevas_ponderaciones[instrumento]['moneda_calculo'],calculo_a_usd)
-        nuevas_ponderaciones[instrumento]['poderacion_pro'] = func_ponderacion(
-            nuevas_ponderaciones[instrumento]['spread_pro'],
-            nuevas_ponderaciones[instrumento]['spread_go'])
-        nuevas_ponderaciones[instrumento]['poderacion_vip'] = nuevas_ponderaciones[instrumento]['poderacion_pro']
+        nuevas_ponderaciones[instrumento]['tipo_instrumento'] = (
+            func_tipo_instrumento(
+                nuevas_ponderaciones[instrumento]['moneda_calculo'],
+                nuevas_ponderaciones[instrumento]['path']
+            )
+        )
+        nuevas_ponderaciones[instrumento]['tipo'] = (
+            func_tipo(
+                nuevas_ponderaciones[instrumento]['path']
+            )
+        )
+        nuevas_ponderaciones[instrumento]['precio'] = (
+            func_precio(
+                instrumento,precios
+            )
+        )
+        nuevas_ponderaciones[instrumento]['monto_usd'] = (
+            func_monto_usd(
+                nuevas_ponderaciones[instrumento]['moneda_calculo'],calculo_a_usd
+            )
+        )
+        nuevas_ponderaciones[instrumento]['poderacion_pro'] = (
+            func_ponderacion(
+                nuevas_ponderaciones[instrumento]['spread_pro'],
+                nuevas_ponderaciones[instrumento]['spread_go']
+            )
+        )
+        nuevas_ponderaciones[instrumento]['poderacion_vip'] = (
+            nuevas_ponderaciones[instrumento]['poderacion_pro']
+        )
 
     return nuevas_ponderaciones

@@ -2,27 +2,37 @@ from con.connection import psql
 
 #& SELECT
 def func_sel_instrumentos_faltantes(conexion):
-    # Obtiene solo los instrumentos faltantes
+    # Obtiene los instrumentos y precio de pr_precios
     cursor = conexion.cursor()
     query_instrumentos_faltantes = f"""
-        select 
-            trim(rp.instrumento) as instrumento
-        from
-            reports.rp_ponderacionxsymbol rp 
-        where 
-            rp.tipo_instrumento is null
-            and (rp.instrumento not like '%x0%'
-            and rp.instrumento not like '%x2%'
-            and rp.instrumento not like '%x4%')
-        order by
-            rp.instrumento asc
+    select
+        pr.symbol as instrumento,
+        round(((pr.bidlast + pr.asklast)/2)::numeric,4) as precio,
+        pr.fecha_insercion::date as fecha_insercion
+    from
+        reports.rp_precios pr
+    where
+        pr.fecha_insercion::date = now()::date - interval '1 day'
+        and (pr.symbol not like '%x0%'
+        and pr.symbol not like '%x2%'
+        and pr.symbol not like '%x4%')
+        limit 1
     """
     cursor.execute(query_instrumentos_faltantes)
-    query_instrumentos_faltantes = cursor.fetchall()
+    instrumentos_faltantes = cursor.fetchall()
 
-    instrumentos_faltantes = tuple([i[0] for i in query_instrumentos_faltantes])
+    instrumentos_faltantes_dict = dict()
 
-    return instrumentos_faltantes
+    for item in instrumentos_faltantes:
+        instrumento = item[0]
+        precio = item[1]
+        fecha_insercion = item[2]
+        instrumentos_faltantes_dict[instrumento] = {
+            'precio': precio,
+            'fecha_insercion' : fecha_insercion,
+        }
+        
+    return instrumentos_faltantes_dict
 
 
 def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
@@ -48,9 +58,9 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
         and ms."Path" not ilike '%Alimentadores%'
         and ms."Path" not ilike '%Provisorios%'
         and ms."Path" not ilike '%MarketExecution%'
-        and ms."Symbol" in {instrumentos_faltantes}
+        and ms."Symbol" in {tuple([x for x in instrumentos_faltantes]) if len([x for x in instrumentos_faltantes]) > 1 else f"('{tuple([x for x in instrumentos_faltantes])[0]}')"}
 """
-
+    
     cursor.execute(query_mt5_symbols) # Ejecuta la query
     mt5_symbols = cursor.fetchall()
     
@@ -82,22 +92,22 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
     return ponderaciones
     
         
-def func_sel_obtener_precio(conexion, instrumentos_faltantes):
-    # Obtiene los precios segun cada instrumento
-    cursor = conexion.cursor()
-    query_precio_x_symbol = f"""
-    select
-        trim(rp.instrumento) as symbol,
-        rp.precio as precio
-    from
-        reports.rp_ponderacionxsymbol rp
-    where trim(rp.instrumento) in {instrumentos_faltantes}
-    """
-#,'#TSLA','TSE.WEED','#ADR_SQM','WTI','UK100','ETF_XLY'
-    cursor.execute(query_precio_x_symbol) # Ejecuta la query
-    precio_x_symbol = cursor.fetchall()
+# def func_sel_obtener_precio(conexion, instrumentos_faltantes):
+#     # Obtiene los precios segun cada instrumento
+#     cursor = conexion.cursor()
+#     query_precio_x_symbol = f"""
+#     select
+#         trim(rp.instrumento) as symbol,
+#         rp.precio as precio
+#     from
+#         reports.rp_ponderacionxsymbol rp
+#     where trim(rp.instrumento) in {instrumentos_faltantes}
+#     """
+# #,'#TSLA','TSE.WEED','#ADR_SQM','WTI','UK100','ETF_XLY'
+#     cursor.execute(query_precio_x_symbol) # Ejecuta la query
+#     precio_x_symbol = cursor.fetchall()
 
-    return precio_x_symbol
+#     return precio_x_symbol
 
 def func_sel_monto_moneda_usd(conexion):
     # Obtiene motod dolarizado segun la moneda
