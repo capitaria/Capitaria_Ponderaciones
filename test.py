@@ -1,8 +1,5 @@
-# Tupla original
-tupla_original = ('#AER',)
+data = {'#ZTS': {'precio': 179.4850, 'fecha_insercion': '2023-12-05'}}
 
-# Crear una nueva tupla sin la coma
-nueva_tupla = (tupla_original[0],)
 
-# Imprimir el resultado
-print(nueva_tupla)
+for d in data['#ZTS']:
+    print(d)

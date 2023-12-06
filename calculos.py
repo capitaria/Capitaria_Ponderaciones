@@ -118,6 +118,7 @@ def func_ponderacion(spread_pro, spread_go):
 
 def func_ponderaciones_campos_no_calculados(ponderacion_base):
     #* Se agrega los campos no calculados (path, tatamano_contrato, moneda_calculo, spread_go, spread_pro, spread_vip y poderacion_go)
+
     nuevas_ponderaciones = dict()
 
     for instrumento in ponderacion_base:
@@ -141,38 +142,41 @@ def func_ponderaciones_campos_no_calculados(ponderacion_base):
     return nuevas_ponderaciones
 
 
-def func_ponderaciones_campos_calculados(nuevas_ponderaciones,precios,calculo_a_usd):
+def func_ponderaciones_campos_calculados(nuevas_ponderaciones,instrumentos_faltantes,calculo_a_usd):
     #* Se agrega los campos calculados (tipo_instrumento, tipo, precio, monto_usd, poderacion_pro y poderacion_vip)
-    for instrumento in nuevas_ponderaciones:
-        nuevas_ponderaciones[instrumento]['tipo_instrumento'] = (
-            func_tipo_instrumento(
-                nuevas_ponderaciones[instrumento]['moneda_calculo'],
-                nuevas_ponderaciones[instrumento]['path']
-            )
-        )
-        nuevas_ponderaciones[instrumento]['tipo'] = (
-            func_tipo(
-                nuevas_ponderaciones[instrumento]['path']
-            )
-        )
-        nuevas_ponderaciones[instrumento]['precio'] = (
-            func_precio(
-                instrumento,precios
-            )
-        )
-        nuevas_ponderaciones[instrumento]['monto_usd'] = (
-            func_monto_usd(
-                nuevas_ponderaciones[instrumento]['moneda_calculo'],calculo_a_usd
-            )
-        )
-        nuevas_ponderaciones[instrumento]['poderacion_pro'] = (
-            func_ponderacion(
-                nuevas_ponderaciones[instrumento]['spread_pro'],
-                nuevas_ponderaciones[instrumento]['spread_go']
-            )
-        )
-        nuevas_ponderaciones[instrumento]['poderacion_vip'] = (
-            nuevas_ponderaciones[instrumento]['poderacion_pro']
-        )
+
+    # for instrumento in nuevas_ponderaciones:
+    #     nuevas_ponderaciones[instrumento]['tipo_instrumento'] = (
+    #         func_tipo_instrumento(
+    #             nuevas_ponderaciones[instrumento]['moneda_calculo'],
+    #             nuevas_ponderaciones[instrumento]['path']
+    #         )
+    #     )
+    #     nuevas_ponderaciones[instrumento]['tipo'] = (
+    #         func_tipo(
+    #             nuevas_ponderaciones[instrumento]['path']
+    #         )
+    #     )
+    #     nuevas_ponderaciones[instrumento]['monto_usd'] = (
+    #         func_monto_usd(
+    #             nuevas_ponderaciones[instrumento]['moneda_calculo'],calculo_a_usd
+    #         )
+    #     )
+    #     nuevas_ponderaciones[instrumento]['poderacion_pro'] = (
+    #         func_ponderacion(
+    #             nuevas_ponderaciones[instrumento]['spread_pro'],
+    #             nuevas_ponderaciones[instrumento]['spread_go']
+    #         )
+    #     )
+    #     nuevas_ponderaciones[instrumento]['poderacion_vip'] = (
+    #         nuevas_ponderaciones[instrumento]['poderacion_pro']
+    #     )
+
+    # for i in instrumentos_faltantes[instrumento]:
+    #     nuevas_ponderaciones = i
+
+    
+    for i in instrumentos_faltantes['#ZTS']:
+        nuevas_ponderaciones['#ZTS']['precio'] = (i)
 
     return nuevas_ponderaciones

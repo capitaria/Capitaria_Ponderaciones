@@ -37,6 +37,10 @@ def func_sel_instrumentos_faltantes(conexion):
 
 def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
     # Obtiene la base de los datos para despues calcular los datos
+
+    #return instrumentos_faltantes
+
+    
     cursor = conexion.cursor()
     query_mt5_symbols = f"""
     select
@@ -53,12 +57,12 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
     from
         mt5_symbols ms
     where
-        ms."Path" not ilike '%historicos%'
+        ms."Symbol" in {tuple([x for x in instrumentos_faltantes]) if len([x for x in instrumentos_faltantes]) > 1 else f"('{[x for x in instrumentos_faltantes][0]}')"}
+        /*and ms."Path" not ilike '%historicos%'
         and ms."Path" not ilike '%start%'
         and ms."Path" not ilike '%Alimentadores%'
         and ms."Path" not ilike '%Provisorios%'
-        and ms."Path" not ilike '%MarketExecution%'
-        and ms."Symbol" in {tuple([x for x in instrumentos_faltantes]) if len([x for x in instrumentos_faltantes]) > 1 else f"('{tuple([x for x in instrumentos_faltantes])[0]}')"}
+        and ms."Path" not ilike '%MarketExecution%'*/
 """
     
     cursor.execute(query_mt5_symbols) # Ejecuta la query
@@ -86,12 +90,12 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
             'spread_pro' : round(spread,1),
             'spread_premium' : round(swapmode,1),
             'swap_compra': round(swaplong,4),
-            'swap_venta': round(swapshort,4)
+            'swap_venta': round(swapshort,4),
             }
 
     return ponderaciones
     
-        
+#! se borrara func_sel_obtener_precio
 # def func_sel_obtener_precio(conexion, instrumentos_faltantes):
 #     # Obtiene los precios segun cada instrumento
 #     cursor = conexion.cursor()
