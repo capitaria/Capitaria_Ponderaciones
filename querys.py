@@ -8,7 +8,8 @@ def func_sel_instrumentos_faltantes(conexion):
     select
         pr.symbol as instrumento,
         round(((pr.bidlast + pr.asklast)/2)::numeric,4) as precio,
-        pr.fecha_insercion::date as fecha_insercion
+        TO_CHAR(pr.fecha_insercion, 'YYYY-MM-DD HH24:MI:SS.MS') as fecha_insercion_precio,
+        TO_CHAR(NOW(), 'YYYY-MM-DD HH24:MI:SS.MS') as fecha_insercion_registro
     from
         reports.rp_precios pr
     where
@@ -16,7 +17,7 @@ def func_sel_instrumentos_faltantes(conexion):
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
-        limit 1
+        limit 100
     """
     cursor.execute(query_instrumentos_faltantes)
     instrumentos_faltantes = cursor.fetchall()
@@ -26,10 +27,12 @@ def func_sel_instrumentos_faltantes(conexion):
     for item in instrumentos_faltantes:
         instrumento = item[0]
         precio = item[1]
-        fecha_insercion = item[2]
+        fecha_insercion_precio = item[2]
+        fecha_insercion_registro = item[3]
         instrumentos_faltantes_dict[instrumento] = {
             'precio': precio,
-            'fecha_insercion' : fecha_insercion,
+            'fecha_insercion_precio' : fecha_insercion_precio,
+            'fecha_insercion_registro' : fecha_insercion_registro,
         }
         
     return instrumentos_faltantes_dict
@@ -95,7 +98,7 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
 
     return ponderaciones
     
-#! se borrara func_sel_obtener_precio
+#! se debe eliminar
 # def func_sel_obtener_precio(conexion, instrumentos_faltantes):
 #     # Obtiene los precios segun cada instrumento
 #     cursor = conexion.cursor()
@@ -166,29 +169,31 @@ def func_sel_monto_moneda_usd(conexion):
         return calculo_a_usd
     
 
-def func_sel_campos_rp_ponderacionxsymbol_python(conexion):
-    cursor = conexion.cursor()
-    ponderacionxsymbol_python = f"""
-        select
-            column_name
-        from
-            information_schema.columns
-        where
-        table_name = 'rp_ponderacionxsymbol_python'
-    """
+#! Se debe borrar
+# def func_sel_campos_rp_ponderacionxsymbol_python(conexion):
+#     # Obtiene los campos de la tabla
+#     cursor = conexion.cursor()
+#     ponderacionxsymbol_python = f"""
+#         select
+#             column_name
+#         from
+#             information_schema.columns
+#         where
+#         table_name = 'rp_ponderacionxsymbol_python'
+#     """
 
-    cursor.execute(ponderacionxsymbol_python)
-    campos = cursor.fetchall()
+#     cursor.execute(ponderacionxsymbol_python)
+#     campos = cursor.fetchall()
 
-    campos = tuple([c[0] for c in campos])
+#     campos = tuple([c[0] for c in campos])
 
-    return campos
+#     return campos
 
 #& FIN SELECT
 
 
 #^ INSERT
-def func_ins_datos_ponderados(conexion, campos_rp_ponderacionxsymbol_python, nuevas_ponderaciones):
+def func_ins_datos_ponderados(conexion, nuevas_ponderaciones):
     # inserta en reports.rp_ponderacionxsymbol_python
     
     new_ponderaciones = list()
@@ -206,10 +211,13 @@ def func_ins_datos_ponderados(conexion, campos_rp_ponderacionxsymbol_python, nue
             nuevas_ponderaciones[i]['spread_vip'],
             nuevas_ponderaciones[i]['poderacion_go'],
             nuevas_ponderaciones[i]['poderacion_pro'],
-            nuevas_ponderaciones[i]['poderacion_vip']
+            nuevas_ponderaciones[i]['poderacion_vip'],
+            nuevas_ponderaciones[i]['path'],
+            nuevas_ponderaciones[i]['fecha_insercion_precio'],
+            nuevas_ponderaciones[i]['fecha_insercion_registro']
         ]
         new_ponderaciones.append(tuple(datos))
-         
+
     cursor = conexion.cursor()
     
     rp_ponderacionxsymbol_python = (
@@ -228,50 +236,20 @@ def func_ins_datos_ponderados(conexion, campos_rp_ponderacionxsymbol_python, nue
         spread_vip,
         poderacion_go,
         poderacion_pro,
-        poderacion_vip
+        poderacion_vip,
+        path,
+        fecha_insercion_precio,
+        fecha_insercion_registro
     )
     VALUES
     (
-        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
     )
     """)
 
     cursor.executemany(rp_ponderacionxsymbol_python,new_ponderaciones)
     conexion.commit()
     cursor.close()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # cursor = conexion.cursor()
-    # query_insert = f"""
-    # insert into
-    #     reports.rp_ponderacionxsymbol_python
-    #     (
-    #         {campos_rp_ponderacionxsymbol_python}
-    #     )
-    # VALUES
-    #     (
-    #         {new_ponderaciones}
-    #     )
-    #     """
-
-    # cursor.executemany(query_insert)
-    
     
 #^ FIN INSERT
 

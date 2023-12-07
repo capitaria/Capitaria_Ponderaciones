@@ -25,7 +25,7 @@ def func_tipo_instrumento(moneda, path):
     elif 'Acciones' in path and 'CLP' in moneda:
         tipo_instrumento = 'CFD CHILE'
     else:
-        tipo_instrumento = 'N/A'
+        tipo_instrumento = None
     
     return tipo_instrumento
 
@@ -47,16 +47,16 @@ def func_tipo(path):
     elif 'acciones' in path.lower():
         tipo = 'ACCIONES'
     else:
-        tipo = 'N/A'
+        tipo = None
         
     return tipo
 
-
-def func_precio(instrumento,precios):
-    # Agrega el Precio cuando el instrumento, es igual al instrumento de la lista de precios
-    for p in precios:
-        if p[0] == instrumento:
-            return p[1]
+#! eliminar
+# def func_precio(instrumento,precios):
+#     # Agrega el Precio cuando el instrumento, es igual al instrumento de la lista de precios
+#     for p in precios:
+#         if p[0] == instrumento:
+#             return p[1]
 
 def func_monto_usd(moneda, monto_a_usd):
     # Calcula el valor del instrumento por dolar transado
@@ -100,8 +100,12 @@ def func_monto_usd(moneda, monto_a_usd):
         for key, valor in monto_a_usd.items():
             if moneda.lower() in key:
                 calculo_a_monto_usd = round(1/float(valor),4)
+    elif moneda == 'USD':
+        for key, valor in monto_a_usd.items():
+            if moneda.lower() in key:
+                calculo_a_monto_usd = valor/valor
     else:
-        calculo_a_monto_usd = 1 # para USD es 1
+        calculo_a_monto_usd = None
     
     return calculo_a_monto_usd
 
@@ -145,38 +149,39 @@ def func_ponderaciones_campos_no_calculados(ponderacion_base):
 def func_ponderaciones_campos_calculados(nuevas_ponderaciones,instrumentos_faltantes,calculo_a_usd):
     #* Se agrega los campos calculados (tipo_instrumento, tipo, precio, monto_usd, poderacion_pro y poderacion_vip)
 
-    # for instrumento in nuevas_ponderaciones:
-    #     nuevas_ponderaciones[instrumento]['tipo_instrumento'] = (
-    #         func_tipo_instrumento(
-    #             nuevas_ponderaciones[instrumento]['moneda_calculo'],
-    #             nuevas_ponderaciones[instrumento]['path']
-    #         )
-    #     )
-    #     nuevas_ponderaciones[instrumento]['tipo'] = (
-    #         func_tipo(
-    #             nuevas_ponderaciones[instrumento]['path']
-    #         )
-    #     )
-    #     nuevas_ponderaciones[instrumento]['monto_usd'] = (
-    #         func_monto_usd(
-    #             nuevas_ponderaciones[instrumento]['moneda_calculo'],calculo_a_usd
-    #         )
-    #     )
-    #     nuevas_ponderaciones[instrumento]['poderacion_pro'] = (
-    #         func_ponderacion(
-    #             nuevas_ponderaciones[instrumento]['spread_pro'],
-    #             nuevas_ponderaciones[instrumento]['spread_go']
-    #         )
-    #     )
-    #     nuevas_ponderaciones[instrumento]['poderacion_vip'] = (
-    #         nuevas_ponderaciones[instrumento]['poderacion_pro']
-    #     )
-
-    # for i in instrumentos_faltantes[instrumento]:
-    #     nuevas_ponderaciones = i
-
+    for instrumento in nuevas_ponderaciones:
+        nuevas_ponderaciones[instrumento]['tipo_instrumento'] = (
+            func_tipo_instrumento(
+                nuevas_ponderaciones[instrumento]['moneda_calculo'],
+                nuevas_ponderaciones[instrumento]['path']
+            )
+        )
+        nuevas_ponderaciones[instrumento]['tipo'] = (
+            func_tipo(
+                nuevas_ponderaciones[instrumento]['path']
+            )
+        )
+        nuevas_ponderaciones[instrumento]['monto_usd'] = (
+            func_monto_usd(
+                nuevas_ponderaciones[instrumento]['moneda_calculo'],calculo_a_usd
+            )
+        )
+        nuevas_ponderaciones[instrumento]['poderacion_pro'] = (
+            func_ponderacion(
+                nuevas_ponderaciones[instrumento]['spread_pro'],
+                nuevas_ponderaciones[instrumento]['spread_go']
+            )
+        )
+        nuevas_ponderaciones[instrumento]['poderacion_vip'] = (
+            nuevas_ponderaciones[instrumento]['poderacion_pro']
+        )
     
-    for i in instrumentos_faltantes['#ZTS']:
-        nuevas_ponderaciones['#ZTS']['precio'] = (i)
+        for key, val in instrumentos_faltantes[instrumento].items():
+            if key == 'precio':
+                nuevas_ponderaciones[instrumento]['precio'] = round(val,4)
+            elif key == 'fecha_insercion_precio':
+                nuevas_ponderaciones[instrumento]['fecha_insercion_precio'] = val
+            elif key == 'fecha_insercion_registro':
+                nuevas_ponderaciones[instrumento]['fecha_insercion_registro'] = val
 
     return nuevas_ponderaciones
