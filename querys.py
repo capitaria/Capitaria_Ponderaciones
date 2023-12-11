@@ -17,7 +17,7 @@ def func_sel_instrumentos_faltantes(conexion):
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
-        limit 100
+        and pr.symbol in ('USDCLP','T.NINTENDO','TSE.WEED','USDJPY')
     """
     cursor.execute(query_instrumentos_faltantes)
     instrumentos_faltantes = cursor.fetchall()
@@ -97,24 +97,7 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
             }
 
     return ponderaciones
-    
-#! se debe eliminar
-# def func_sel_obtener_precio(conexion, instrumentos_faltantes):
-#     # Obtiene los precios segun cada instrumento
-#     cursor = conexion.cursor()
-#     query_precio_x_symbol = f"""
-#     select
-#         trim(rp.instrumento) as symbol,
-#         rp.precio as precio
-#     from
-#         reports.rp_ponderacionxsymbol rp
-#     where trim(rp.instrumento) in {instrumentos_faltantes}
-#     """
-# #,'#TSLA','TSE.WEED','#ADR_SQM','WTI','UK100','ETF_XLY'
-#     cursor.execute(query_precio_x_symbol) # Ejecuta la query
-#     precio_x_symbol = cursor.fetchall()
 
-#     return precio_x_symbol
 
 def func_sel_monto_moneda_usd(conexion):
     # Obtiene motod dolarizado segun la moneda
@@ -169,6 +152,71 @@ def func_sel_monto_moneda_usd(conexion):
         return calculo_a_usd
     
 
+def func_sel_instrumentos_old(conexion, instrumentos_faltantes):
+    # Obtiene los instrumentods de la base de datos
+    cursor = conexion.cursor()
+    query_instrumentos_old = f"""
+    select 
+        instrumento,
+        tipo_instrumento,
+        tipo,
+        precio,
+        tamano_contrato,
+        moneda_calculo,
+        monto_usd,
+        spread_go,
+        spread_pro,
+        spread_vip,
+        poderacion_go,
+        poderacion_pro,
+        poderacion_vip,
+        "path",
+        fecha_insercion_precio,
+        fecha_insercion_registro
+    from 
+        reports.rp_ponderacionxsymbol_python_update rppu
+    where
+        rppu.instrumento in {tuple([x for x in instrumentos_faltantes]) if len([x for x in instrumentos_faltantes]) > 1 else f"('{[x for x in instrumentos_faltantes][0]}')"}
+    """
+    cursor.execute(query_instrumentos_old)
+    old_instrumentos = cursor.fetchall()
+
+    viejas_ponderaciones = dict()
+    
+    for item in old_instrumentos:
+        instrumento = item[0]
+        tipo_instrumento = item[1]
+        tipo = item[2]
+        precio = item[3]
+        tamanio_contrato = item[4]
+        moneda_calculo = item[5]
+        monto_usd = item[6]
+        spread_go = item[7]
+        spread_pro = item[8]
+        spread_vip = item[9]
+        poderacion_go = item[10]
+        poderacion_pro = item[11]
+        poderacion_vip = item[12]
+        fecha_insercion_precio = item[13]
+        viejas_ponderaciones[instrumento] = {
+            'tipo_instrumento': tipo_instrumento,
+            'tipo' : tipo,
+            'precio' : round(precio,4),
+            'tamanio_contrato' : int(tamanio_contrato),
+            'moneda_calculo' : moneda_calculo,
+            'monto_usd' : round(monto_usd,4),
+            'spread_go' : round(spread_go,4),
+            'spread_pro': round(spread_pro,4),
+            'spread_vip': round(spread_vip,4),
+            'poderacion_go': round(poderacion_go,4),
+            'poderacion_pro': round(poderacion_pro,4),
+            'poderacion_vip': round(poderacion_vip,4),
+            'fecha_insercion_precio': fecha_insercion_precio,
+            }
+        
+    return viejas_ponderaciones
+
+
 #! Se debe borrar
 # def func_sel_campos_rp_ponderacionxsymbol_python(conexion):
 #     # Obtiene los campos de la tabla
@@ -222,7 +270,9 @@ def func_ins_datos_ponderados(conexion, nuevas_ponderaciones):
     
     rp_ponderacionxsymbol_python = (
     f"""
-    INSERT INTO reports.rp_ponderacionxsymbol_python
+    INSERT INTO
+    -- reports.rp_ponderacionxsymbol_python /*Historico*/
+    reports.rp_ponderacionxsymbol_python_update /*Se va actualizando - NO historico*/
     (
         instrumento,
         tipo_instrumento,

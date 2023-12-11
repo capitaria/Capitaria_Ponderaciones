@@ -51,12 +51,7 @@ def func_tipo(path):
         
     return tipo
 
-#! eliminar
-# def func_precio(instrumento,precios):
-#     # Agrega el Precio cuando el instrumento, es igual al instrumento de la lista de precios
-#     for p in precios:
-#         if p[0] == instrumento:
-#             return p[1]
+
 
 def func_monto_usd(moneda, monto_a_usd):
     # Calcula el valor del instrumento por dolar transado
@@ -185,3 +180,21 @@ def func_ponderaciones_campos_calculados(nuevas_ponderaciones,instrumentos_falta
                 nuevas_ponderaciones[instrumento]['fecha_insercion_registro'] = val
 
     return nuevas_ponderaciones
+
+def func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones):
+    # va a buscar los nuevos instrumentos para ver si estan en la tabla, en caso de que esten va a recorrer los campos y ve si alguno cambio, para entonces actualizar, si no, no hay cambios, no actualizara el instrumento
+    update = dict()
+    no_update = dict()
+    insert = dict()
+
+    for instrumento in nuevas_ponderaciones:
+        if instrumento in viejas_ponderaciones:
+            if viejas_ponderaciones[instrumento]['poderacion_pro'] != nuevas_ponderaciones[instrumento]['poderacion_pro']:
+                update.update({instrumento:nuevas_ponderaciones[instrumento]})
+                continue
+            else:
+                no_update.update({instrumento:nuevas_ponderaciones[instrumento]})
+                continue
+        else:
+            insert.update({instrumento:nuevas_ponderaciones[instrumento]})
+    return f"insert: {insert}\nupdate: {update}\nno update: {no_update}"
