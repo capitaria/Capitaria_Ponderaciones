@@ -1,4 +1,4 @@
-from con.connection import psql
+
 
 #& SELECT
 def func_sel_instrumentos_faltantes(conexion):
@@ -13,11 +13,12 @@ def func_sel_instrumentos_faltantes(conexion):
     from
         reports.rp_precios pr
     where
-        pr.fecha_insercion::date = now()::date - interval '1 day'
+        pr.fecha_insercion::date = now()::date - interval '2 day'
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
         and pr.symbol in ('USDCLP','T.NINTENDO','TSE.WEED','USDJPY')
+        -- (,'T.NINTENDO','TSE.WEED','USDJPY')
     """
     cursor.execute(query_instrumentos_faltantes)
     instrumentos_faltantes = cursor.fetchall()
@@ -241,67 +242,125 @@ def func_sel_instrumentos_old(conexion, instrumentos_faltantes):
 
 
 #^ INSERT
-def func_ins_datos_ponderados(conexion, nuevas_ponderaciones):
-    # inserta en reports.rp_ponderacionxsymbol_python
-    
-    new_ponderaciones = list()
-    for i in nuevas_ponderaciones:
-        datos = [
-            i,
-            nuevas_ponderaciones[i]['tipo_instrumento'],
-            nuevas_ponderaciones[i]['tipo'],
-            nuevas_ponderaciones[i]['precio'],
-            nuevas_ponderaciones[i]['tamanio_contrato'],
-            nuevas_ponderaciones[i]['moneda_calculo'],
-            nuevas_ponderaciones[i]['monto_usd'],
-            nuevas_ponderaciones[i]['spread_go'],
-            nuevas_ponderaciones[i]['spread_pro'],
-            nuevas_ponderaciones[i]['spread_vip'],
-            nuevas_ponderaciones[i]['poderacion_go'],
-            nuevas_ponderaciones[i]['poderacion_pro'],
-            nuevas_ponderaciones[i]['poderacion_vip'],
-            nuevas_ponderaciones[i]['path'],
-            nuevas_ponderaciones[i]['fecha_insercion_precio'],
-            nuevas_ponderaciones[i]['fecha_insercion_registro']
-        ]
-        new_ponderaciones.append(tuple(datos))
+def func_ins_datos_ponderados(conexion, insert):
+    # inserta en reports.rp_ponderacionxsymbol_python_update
+    if len(insert) >= 1:
+        new_ponderaciones_insert = list()
+        for i in insert:
+            datos = [
+                i,
+                insert[i]['tipo_instrumento'],
+                insert[i]['tipo'],
+                insert[i]['precio'],
+                insert[i]['tamanio_contrato'],
+                insert[i]['moneda_calculo'],
+                insert[i]['monto_usd'],
+                insert[i]['spread_go'],
+                insert[i]['spread_pro'],
+                insert[i]['spread_vip'],
+                insert[i]['poderacion_go'],
+                insert[i]['poderacion_pro'],
+                insert[i]['poderacion_vip'],
+                insert[i]['path'],
+                insert[i]['fecha_insercion_precio'],
+                insert[i]['fecha_insercion_registro']
+            ]
+            new_ponderaciones_insert.append(tuple(datos))
+            
+        cursor = conexion.cursor()
+        
+        rp_ponderacionxsymbol_python = (
+        f"""
+        INSERT INTO
+        reports.rp_ponderacionxsymbol_python_update
+        (
+            instrumento,
+            tipo_instrumento,
+            tipo,
+            precio,
+            tamano_contrato,
+            moneda_calculo,
+            monto_usd,
+            spread_go,
+            spread_pro,
+            spread_vip,
+            poderacion_go,
+            poderacion_pro,
+            poderacion_vip,
+            path,
+            fecha_insercion_precio,
+            fecha_insercion_registro
+        )
+        VALUES
+        (
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+        )
+        """)
 
-    cursor = conexion.cursor()
-    
-    rp_ponderacionxsymbol_python = (
-    f"""
-    INSERT INTO
-    -- reports.rp_ponderacionxsymbol_python /*Historico*/
-    reports.rp_ponderacionxsymbol_python_update /*Se va actualizando - NO historico*/
-    (
-        instrumento,
-        tipo_instrumento,
-        tipo,
-        precio,
-        tamano_contrato,
-        moneda_calculo,
-        monto_usd,
-        spread_go,
-        spread_pro,
-        spread_vip,
-        poderacion_go,
-        poderacion_pro,
-        poderacion_vip,
-        path,
-        fecha_insercion_precio,
-        fecha_insercion_registro
-    )
-    VALUES
-    (
-        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-    )
-    """)
-
-    cursor.executemany(rp_ponderacionxsymbol_python,new_ponderaciones)
-    conexion.commit()
-    cursor.close()
-    
+        cursor.executemany(rp_ponderacionxsymbol_python,new_ponderaciones_insert)
+        conexion.commit()
+        cursor.close()
 #^ FIN INSERT
 
+#^ UPDATE
+def func_upd_datos_ponderados(conexion, update):
+    # actualiza en reports.rp_ponderacionxsymbol_python_update
+    
+    if len(update) >= 1:
+        new_ponderaciones_update = list()
+        for i in update:
+            datos = [
+                update[i]['tipo_instrumento'],
+                update[i]['tipo'],
+                update[i]['precio'],
+                update[i]['tamanio_contrato'],
+                update[i]['moneda_calculo'],
+                update[i]['monto_usd'],
+                update[i]['spread_go'],
+                update[i]['spread_pro'],
+                update[i]['spread_vip'],
+                update[i]['poderacion_go'],
+                update[i]['poderacion_pro'],
+                update[i]['poderacion_vip'],
+                update[i]['path'],
+                update[i]['fecha_insercion_precio'],
+                update[i]['fecha_insercion_registro'],
+                i
+            ]
+            new_ponderaciones_update.append(datos)
+            
+        cursor = conexion.cursor()
+    
+        rp_ponderacionxsymbol_python = (
+        f"""
+        update
+        reports.rp_ponderacionxsymbol_python_update
+        set
+            tipo_instrumento = %s,
+            tipo = %s,
+            precio = %s,
+            tamano_contrato = %s,
+            moneda_calculo = %s,
+            monto_usd = %s,
+            spread_go = %s,
+            spread_pro = %s,
+            spread_vip = %s,
+            poderacion_go = %s,
+            poderacion_pro = %s,
+            poderacion_vip = %s,
+            "path" = %s,
+            fecha_insercion_precio = %s,
+            fecha_insercion_registro = %s
+        where
+            instrumento = %s
+        """)
 
+        for datos_update in new_ponderaciones_update:
+            cursor.execute(rp_ponderacionxsymbol_python, datos_update)
+            #print(datos_update)    
+            conexion.commit()
+        
+        conexion.close()
+
+#^ FIN UPDATE
 

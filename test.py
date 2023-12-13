@@ -23,30 +23,49 @@
 
 
 
+import psycopg2
+from psycopg2 import sql
 
+# Configura tus credenciales de la base de datos
+dbname = 'nombre_de_tu_base_de_datos'
+user = 'tu_usuario'
+password = 'tu_contraseña'
+host = 'localhost'
 
+# Establece la conexión con la base de datos
+conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
 
+# Crea un cursor para ejecutar consultas SQL
+cursor = conn.cursor()
 
+# Datos de actualización masiva (puedes obtener estos datos de una fuente externa)
+datos_actualizacion = [
+    {'id': 1, 'columna1': 'nuevo_valor1', 'columna2': 'nuevo_valor2'},
+    {'id': 2, 'columna1': 'otro_valor1', 'columna2': 'otro_valor2'},
+    # Agrega más filas según sea necesario
+]
 
-# Diccionario de origen
-diccionario_origen = {'clave1': 'valor1', 'clave2': 'valor2'}
+# Itera sobre los datos de actualización y ejecuta la consulta de actualización
+for datos in datos_actualizacion:
+    # Construye la consulta UPDATE utilizando SQL dinámico
+    query = sql.SQL("UPDATE nombre_de_la_tabla SET {} WHERE id = %s").format(
+        sql.SQL(', ').join(
+            [sql.Identifier(columna) + sql.SQL(' = %s') for columna in datos.keys() if columna != 'id']
+        )
+    )
 
-# Diccionario de destino
-diccionario_destino = {}
+    # Concatena los valores de las columnas (excluyendo 'id')
+    valores = [datos[columna] for columna in datos.keys() if columna != 'id']
 
-# Clave que deseas mover
-clave_a_mover = 'clave1'
+    # Añade el valor del 'id' al final de la lista de valores
+    valores.append(datos['id'])
 
-# Verificar si la clave existe en el diccionario de origen
-if clave_a_mover in diccionario_origen:
-    # Extraer el valor asociado a la clave
-    valor_moved = diccionario_origen.pop(clave_a_mover)
-    
-    # Agregar la clave y valor al diccionario de destino
-    diccionario_destino[clave_a_mover] = valor_moved
+    # Ejecuta la consulta con los parámetros
+    cursor.execute(query, valores)
 
-    # Imprimir los diccionarios después de la operación
-    print("Diccionario de origen:", diccionario_origen)
-    print("Diccionario de destino:", diccionario_destino)
-else:
-    print(f"La clave '{clave_a_mover}' no existe en el diccionario de origen.")
+# Guarda los cambios en la base de datos
+conn.commit()
+
+# Cierra el cursor y la conexión
+cursor.close()
+conn.close()

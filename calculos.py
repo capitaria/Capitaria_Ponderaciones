@@ -189,12 +189,11 @@ def func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones):
 
     for instrumento in nuevas_ponderaciones:
         if instrumento in viejas_ponderaciones:
-            if viejas_ponderaciones[instrumento]['poderacion_pro'] != nuevas_ponderaciones[instrumento]['poderacion_pro']:
+            if viejas_ponderaciones[instrumento]['poderacion_pro'] != nuevas_ponderaciones[instrumento]['poderacion_pro'] or viejas_ponderaciones[instrumento]['precio'] != nuevas_ponderaciones[instrumento]['precio']:
                 update.update({instrumento:nuevas_ponderaciones[instrumento]})
-                continue
             else:
                 no_update.update({instrumento:nuevas_ponderaciones[instrumento]})
-                continue
         else:
             insert.update({instrumento:nuevas_ponderaciones[instrumento]})
-    return f"insert: {insert}\nupdate: {update}\nno update: {no_update}"
+            
+    return insert, update, no_update
