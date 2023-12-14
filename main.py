@@ -14,9 +14,10 @@ try:
         nuevas_ponderaciones = func_ponderaciones_campos_calculados(nuevas_ponderaciones,instrumentos_faltantes,calculo_a_usd)
         viejas_ponderaciones = func_sel_instrumentos_old(conexion, instrumentos_faltantes)
         insert, update, no_update = func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones)
-        print(f"\n\nINSERT: {insert}\n\nUPDATE: {update}\n\nNO UPDATE: {no_update}")
-        func_ins_datos_ponderados(conexion, insert)
-        func_upd_datos_ponderados(conexion, update)
+        #print(f"\n\nINSERT: {insert}\n\nUPDATE: {update}\n\nNO UPDATE: {no_update}")
+        func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones) #& para la tabla rp_ponderacionxsymbol_python_historical
+        func_ins_datos_ponderados(conexion, insert) #& para la tabla rp_ponderacionxsymbol_python_update
+        func_upd_datos_ponderados(conexion, update) #& para la tabla rp_ponderacionxsymbol_python_update
 except psql().Error as e:
     print("Error al conectar a la base de datos PostgreSQL: {}".format(e))
 finally:

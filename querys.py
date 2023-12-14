@@ -1,5 +1,3 @@
-
-
 #& SELECT
 def func_sel_instrumentos_faltantes(conexion):
     # Obtiene los instrumentos y precio de pr_precios
@@ -13,11 +11,11 @@ def func_sel_instrumentos_faltantes(conexion):
     from
         reports.rp_precios pr
     where
-        pr.fecha_insercion::date = now()::date - interval '2 day'
+        pr.fecha_insercion::date = now()::date -- interval '1 day'
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
-        and pr.symbol in ('USDCLP','T.NINTENDO','TSE.WEED','USDJPY')
+        -- and pr.symbol in ('USDCLP')
         -- (,'T.NINTENDO','TSE.WEED','USDJPY')
     """
     cursor.execute(query_instrumentos_faltantes)
@@ -364,3 +362,63 @@ def func_upd_datos_ponderados(conexion, update):
 
 #^ FIN UPDATE
 
+#^ INICIO HISTORICO
+def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
+    # inserta en reports.rp_ponderacionxsymbol_python_update
+    if len(nuevas_ponderaciones) >= 1:
+        new_ponderaciones_insert_historic = list()
+        for i in nuevas_ponderaciones:
+            datos = [
+                i,
+                nuevas_ponderaciones[i]['tipo_instrumento'],
+                nuevas_ponderaciones[i]['tipo'],
+                nuevas_ponderaciones[i]['precio'],
+                nuevas_ponderaciones[i]['tamanio_contrato'],
+                nuevas_ponderaciones[i]['moneda_calculo'],
+                nuevas_ponderaciones[i]['monto_usd'],
+                nuevas_ponderaciones[i]['spread_go'],
+                nuevas_ponderaciones[i]['spread_pro'],
+                nuevas_ponderaciones[i]['spread_vip'],
+                nuevas_ponderaciones[i]['poderacion_go'],
+                nuevas_ponderaciones[i]['poderacion_pro'],
+                nuevas_ponderaciones[i]['poderacion_vip'],
+                nuevas_ponderaciones[i]['path'],
+                nuevas_ponderaciones[i]['fecha_insercion_precio'],
+                nuevas_ponderaciones[i]['fecha_insercion_registro']
+            ]
+            new_ponderaciones_insert_historic.append(tuple(datos))
+            
+        cursor = conexion.cursor()
+        
+        rp_ponderacionxsymbol_python = (
+        f"""
+        INSERT INTO
+        reports.rp_ponderacionxsymbol_python_historical
+        (
+            instrumento,
+            tipo_instrumento,
+            tipo,
+            precio,
+            tamano_contrato,
+            moneda_calculo,
+            monto_usd,
+            spread_go,
+            spread_pro,
+            spread_vip,
+            poderacion_go,
+            poderacion_pro,
+            poderacion_vip,
+            path,
+            fecha_insercion_precio,
+            fecha_insercion_registro
+        )
+        VALUES
+        (
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+        )
+        """)
+
+        cursor.executemany(rp_ponderacionxsymbol_python,new_ponderaciones_insert_historic)
+        conexion.commit()
+        cursor.close()
+#^ FIN INICIO HISTORICO
