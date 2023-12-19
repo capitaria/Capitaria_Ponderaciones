@@ -7,14 +7,13 @@ try:
     if conexion: # Verificar si la conexión está abierta
         print("Conexión exitosa a la base de datos PostgreSQL")
         instrumentos_faltantes = func_sel_instrumentos_faltantes(conexion)
-        #print(instrumentos_faltantes)
         calculo_a_usd = func_sel_monto_moneda_usd(conexion)
         ponderacion_base = func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes)
         nuevas_ponderaciones = func_ponderaciones_campos_no_calculados(ponderacion_base)
         nuevas_ponderaciones = func_ponderaciones_campos_calculados(nuevas_ponderaciones,instrumentos_faltantes,calculo_a_usd)
         viejas_ponderaciones = func_sel_instrumentos_old(conexion, instrumentos_faltantes)
         insert, update, no_update = func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones)
-        #print(f"\n\nINSERT: {insert}\n\nUPDATE: {update}\n\nNO UPDATE: {no_update}")
+        #print(f"\n\nNuevo: {[symbol for symbol in insert]}\n\nActualizado: {[symbol for symbol in update]}\n\nNo Actualizado: {[symbol for symbol in no_update]}")
         func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones) #& para la tabla rp_ponderacionxsymbol_python_historical
         func_ins_datos_ponderados(conexion, insert) #& para la tabla rp_ponderacionxsymbol_python_update
         func_upd_datos_ponderados(conexion, update) #& para la tabla rp_ponderacionxsymbol_python_update

@@ -15,8 +15,7 @@ def func_sel_instrumentos_faltantes(conexion):
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
-        -- and pr.symbol in ('USDCLP')
-        -- (,'T.NINTENDO','TSE.WEED','USDJPY')
+        -- and pr.symbol in ('USDCLP','T.NINTENDO','TSE.WEED','USDJPY')
     """
     cursor.execute(query_instrumentos_faltantes)
     instrumentos_faltantes = cursor.fetchall()
@@ -29,7 +28,7 @@ def func_sel_instrumentos_faltantes(conexion):
         fecha_insercion_precio = item[2]
         fecha_insercion_registro = item[3]
         instrumentos_faltantes_dict[instrumento] = {
-            'precio': precio,
+            'precio': round(float(precio),4),
             'fecha_insercion_precio' : fecha_insercion_precio,
             'fecha_insercion_registro' : fecha_insercion_registro,
         }
@@ -60,11 +59,11 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
         mt5_symbols ms
     where
         ms."Symbol" in {tuple([x for x in instrumentos_faltantes]) if len([x for x in instrumentos_faltantes]) > 1 else f"('{[x for x in instrumentos_faltantes][0]}')"}
-        /*and ms."Path" not ilike '%historicos%'
+        and ms."Path" not ilike '%historicos%'
         and ms."Path" not ilike '%start%'
         and ms."Path" not ilike '%Alimentadores%'
         and ms."Path" not ilike '%Provisorios%'
-        and ms."Path" not ilike '%MarketExecution%'*/
+        and ms."Path" not ilike '%MarketExecution%'
 """
     
     cursor.execute(query_mt5_symbols) # Ejecuta la query
@@ -162,7 +161,7 @@ def func_sel_instrumentos_old(conexion, instrumentos_faltantes):
         precio,
         tamano_contrato,
         moneda_calculo,
-        monto_usd,
+        coalesce(monto_usd,0) as monto_usd,
         spread_go,
         spread_pro,
         spread_vip,
@@ -203,6 +202,7 @@ def func_sel_instrumentos_old(conexion, instrumentos_faltantes):
             'precio' : round(precio,4),
             'tamanio_contrato' : int(tamanio_contrato),
             'moneda_calculo' : moneda_calculo,
+            #'monto_usd' : round((monto_usd if monto_usd != None else 0),4),
             'monto_usd' : round(monto_usd,4),
             'spread_go' : round(spread_go,4),
             'spread_pro': round(spread_pro,4),

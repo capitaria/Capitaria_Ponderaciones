@@ -23,49 +23,52 @@
 
 
 
-import psycopg2
-from psycopg2 import sql
+# import psycopg2
+# from psycopg2 import sql
 
-# Configura tus credenciales de la base de datos
-dbname = 'nombre_de_tu_base_de_datos'
-user = 'tu_usuario'
-password = 'tu_contraseña'
-host = 'localhost'
+# # Configura tus credenciales de la base de datos
+# dbname = 'nombre_de_tu_base_de_datos'
+# user = 'tu_usuario'
+# password = 'tu_contraseña'
+# host = 'localhost'
 
-# Establece la conexión con la base de datos
-conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
+# # Establece la conexión con la base de datos
+# conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
 
-# Crea un cursor para ejecutar consultas SQL
-cursor = conn.cursor()
+# # Crea un cursor para ejecutar consultas SQL
+# cursor = conn.cursor()
 
-# Datos de actualización masiva (puedes obtener estos datos de una fuente externa)
-datos_actualizacion = [
-    {'id': 1, 'columna1': 'nuevo_valor1', 'columna2': 'nuevo_valor2'},
-    {'id': 2, 'columna1': 'otro_valor1', 'columna2': 'otro_valor2'},
-    # Agrega más filas según sea necesario
-]
+# # Datos de actualización masiva (puedes obtener estos datos de una fuente externa)
+# datos_actualizacion = [
+#     {'id': 1, 'columna1': 'nuevo_valor1', 'columna2': 'nuevo_valor2'},
+#     {'id': 2, 'columna1': 'otro_valor1', 'columna2': 'otro_valor2'},
+#     # Agrega más filas según sea necesario
+# ]
 
-# Itera sobre los datos de actualización y ejecuta la consulta de actualización
-for datos in datos_actualizacion:
-    # Construye la consulta UPDATE utilizando SQL dinámico
-    query = sql.SQL("UPDATE nombre_de_la_tabla SET {} WHERE id = %s").format(
-        sql.SQL(', ').join(
-            [sql.Identifier(columna) + sql.SQL(' = %s') for columna in datos.keys() if columna != 'id']
-        )
-    )
+# # Itera sobre los datos de actualización y ejecuta la consulta de actualización
+# for datos in datos_actualizacion:
+#     # Construye la consulta UPDATE utilizando SQL dinámico
+#     query = sql.SQL("UPDATE nombre_de_la_tabla SET {} WHERE id = %s").format(
+#         sql.SQL(', ').join(
+#             [sql.Identifier(columna) + sql.SQL(' = %s') for columna in datos.keys() if columna != 'id']
+#         )
+#     )
 
-    # Concatena los valores de las columnas (excluyendo 'id')
-    valores = [datos[columna] for columna in datos.keys() if columna != 'id']
+#     # Concatena los valores de las columnas (excluyendo 'id')
+#     valores = [datos[columna] for columna in datos.keys() if columna != 'id']
 
-    # Añade el valor del 'id' al final de la lista de valores
-    valores.append(datos['id'])
+#     # Añade el valor del 'id' al final de la lista de valores
+#     valores.append(datos['id'])
 
-    # Ejecuta la consulta con los parámetros
-    cursor.execute(query, valores)
+#     # Ejecuta la consulta con los parámetros
+#     cursor.execute(query, valores)
 
-# Guarda los cambios en la base de datos
-conn.commit()
+# # Guarda los cambios en la base de datos
+# conn.commit()
 
-# Cierra el cursor y la conexión
-cursor.close()
-conn.close()
+# # Cierra el cursor y la conexión
+# cursor.close()
+# conn.close()
+
+
+
