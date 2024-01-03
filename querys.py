@@ -1,3 +1,4 @@
+
 #& SELECT
 def func_sel_instrumentos_faltantes(conexion):
     # Obtiene los instrumentos y precio de pr_precios
@@ -11,37 +12,34 @@ def func_sel_instrumentos_faltantes(conexion):
     from
         reports.rp_precios pr
     where
-        pr.fecha_insercion::date = now()::date -- interval '1 day'
+        pr.fecha_insercion::date = now()::date - interval '1 day'
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
+        and pr.symbol = 'WTI'
         -- and pr.symbol in ('USDCLP','T.NINTENDO','TSE.WEED','USDJPY')
     """
     cursor.execute(query_instrumentos_faltantes)
-    instrumentos_faltantes = cursor.fetchall()
+    query_instrumentos_faltantes = cursor.fetchall()
 
-    instrumentos_faltantes_dict = dict()
+    instrumentos_faltantes = dict()
 
-    for item in instrumentos_faltantes:
+    for item in query_instrumentos_faltantes:
         instrumento = item[0]
         precio = item[1]
         fecha_insercion_precio = item[2]
         fecha_insercion_registro = item[3]
-        instrumentos_faltantes_dict[instrumento] = {
+        instrumentos_faltantes[instrumento] = {
             'precio': round(float(precio),4),
             'fecha_insercion_precio' : fecha_insercion_precio,
             'fecha_insercion_registro' : fecha_insercion_registro,
         }
         
-    return instrumentos_faltantes_dict
+    return instrumentos_faltantes
 
 
 def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
     # Obtiene la base de los datos para despues calcular los datos
-
-    #return instrumentos_faltantes
-
-    
     cursor = conexion.cursor()
     query_mt5_symbols = f"""
     select
@@ -52,7 +50,7 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
         ms."VolumeMin"/10000 as monto_operacion_min,
         ms."VolumeMax"/10000 as monto_operacion_max,
         ms."Spread" as spread_pro,
-        ms."Spread" - ms."SwapMode" as spread_premium,
+        null as spread_premium,
         ms."SwapLong" as swap_compra,
         ms."SwapShort" as swap_venta
     from
@@ -67,11 +65,11 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
 """
     
     cursor.execute(query_mt5_symbols) # Ejecuta la query
-    mt5_symbols = cursor.fetchall()
+    query_mt5_symbols = cursor.fetchall()
     
-    ponderaciones = dict()
+    ponderacion_base = dict()
     
-    for item in mt5_symbols:
+    for item in query_mt5_symbols:
         symbol = item[0]
         path = item[1]
         currencybase = item[2]
@@ -82,19 +80,19 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
         swapmode = item[7]
         swaplong = item[8]
         swapshort = item[9]
-        ponderaciones[symbol] = {
+        ponderacion_base[symbol] = {
             'path': path,
             'moneda_base' : currencybase,
             'tamanio_1_lote' : int(contractsize),
             'monto_operacion_min' : round(volumemin,1),
             'monto_operacion_max' : round(volumemax,1),
             'spread_pro' : round(spread,1),
-            'spread_premium' : round(swapmode,1),
+            'spread_premium' : None,
             'swap_compra': round(swaplong,4),
             'swap_venta': round(swapshort,4),
             }
 
-    return ponderaciones
+    return ponderacion_base
 
 
 def func_sel_monto_moneda_usd(conexion):
@@ -119,11 +117,11 @@ def func_sel_monto_moneda_usd(conexion):
         fetch first 1 row only
     """
     cursor.execute(query_monto_moneda_a_usd) # Ejecuta la query
-    monto_moneda_a_usd = cursor.fetchall()
+    query_monto_moneda_a_usd = cursor.fetchall()
 
-    calculo_a_usd = dict()
+    monto_moneda_a_usd = dict()
     
-    for item in monto_moneda_a_usd:
+    for item in query_monto_moneda_a_usd:
         usdclp = item[0]
         usdpen = item[1]
         usdcad = item[2]
@@ -134,7 +132,7 @@ def func_sel_monto_moneda_usd(conexion):
         gbpusd = item[7]
         usdchf = item[8]
         usdmxn = item[9]
-        calculo_a_usd = {
+        monto_moneda_a_usd = {
             'usdclp' : round(usdclp,5),
             'usdpen' : round(usdpen,5),
             'usdcad' : round(usdcad,5),
@@ -147,7 +145,7 @@ def func_sel_monto_moneda_usd(conexion):
             'usdmxn' : round(usdmxn,5),
             }
         
-        return calculo_a_usd
+        return monto_moneda_a_usd
     
 
 def func_sel_instrumentos_old(conexion, instrumentos_faltantes):
@@ -215,6 +213,77 @@ def func_sel_instrumentos_old(conexion, instrumentos_faltantes):
         
     return viejas_ponderaciones
 
+def func_sel_grupos_reales(conexion):
+    # Obtiene los IDs de grupos, el nombre de grupo y la categoria
+    cursor = conexion.cursor()
+    query_grupos_reales = f"""
+    select 
+        mg."Group_ID" as grupo_id,
+        mg."Group" as grupo,
+        case
+            when mg."Group" ilike '%ful%' then 'FUL'
+            when mg."Group" ilike '%vip%' then 'VIP'
+            when mg."Group" ilike '%pre%' then 'PRE'
+            else mg."Group"
+        end as cat_grupo
+    from
+        mt5_groups mg
+    where
+        mg."Group" ilike 'real%'
+        and mg."Group" not ilike '%lite%'
+        and mg."Group" not ilike '%sta%'
+        and mg."Group" not ilike '%ins%mesa%'
+        and mg."Group_ID" not in (5,10,14) -- GRUPO NO ENCONTRADOS
+        and mg."Group_ID" in (147,148,554) -- COMENTAR
+    """
+
+    cursor.execute(query_grupos_reales)
+    query_grupos_reales = cursor.fetchall()
+    
+    grupos_reales = list()
+    
+    for item in query_grupos_reales:
+        grupo_id = int(item[0])
+        grupo = item[1]
+        categoria_grupo = item[2]
+        grupos_reales.append([
+            grupo_id,
+            grupo,
+            categoria_grupo
+        ])
+
+    return grupos_reales
+
+
+def func_sel_grupos_simbolos(conexion):
+    # Obtiene los IDs de grupos, el nombre de grupo y la categoria
+    cursor = conexion.cursor()
+    query_grupos_simbolos = f"""
+    select 
+        mgs."Group_ID" as grupo_id_asoc,
+        mgs."Path" as path,
+        mgs."SpreadDiff" as spread_premium_diff
+    from
+        mt5_groups_symbols mgs
+        -- where mgs."Group_ID" in (147,148) -- COMENTAR
+    """
+
+    cursor.execute(query_grupos_simbolos)
+    query_grupos_simbolos = cursor.fetchall()
+    
+    grupos_simbolos = list()
+    
+    for item in query_grupos_simbolos:
+        grupo_id_asoc = int(item[0])
+        path = item[1]
+        spread_premium_diff = item[2]
+        grupos_simbolos.append([
+            grupo_id_asoc,
+            path,
+            spread_premium_diff
+        ])
+
+    return grupos_simbolos
 
 #! Se debe borrar
 # def func_sel_campos_rp_ponderacionxsymbol_python(conexion):

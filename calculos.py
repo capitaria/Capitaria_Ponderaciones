@@ -116,7 +116,7 @@ def func_ponderacion(spread_pro, spread_go):
 
 
 def func_ponderaciones_campos_no_calculados(ponderacion_base):
-    #* Se agrega los campos no calculados (path, tatamano_contrato, moneda_calculo, spread_go, spread_pro, spread_vip y poderacion_go)
+    # Se agrega los campos no calculados (path, tatamano_contrato, moneda_calculo, spread_go (pro) y poderacion_go)
 
     nuevas_ponderaciones = dict()
 
@@ -132,9 +132,9 @@ def func_ponderaciones_campos_no_calculados(ponderacion_base):
                 nuevas_ponderaciones[instrumento]['moneda_calculo'] = valor
             elif key == 'spread_pro':
                 nuevas_ponderaciones[instrumento]['spread_go'] = int(valor)
-            elif key == 'spread_premium':
-                nuevas_ponderaciones[instrumento]['spread_pro'] = int(valor)
-                nuevas_ponderaciones[instrumento]['spread_vip'] = int(valor)
+            # elif key == 'spread_premium':
+            #     nuevas_ponderaciones[instrumento]['spread_pro'] = int(valor)
+            #     nuevas_ponderaciones[instrumento]['spread_vip'] = int(valor)
 
             nuevas_ponderaciones[instrumento]['poderacion_go'] = 1
 
@@ -197,3 +197,22 @@ def func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones):
             insert.update({instrumento:nuevas_ponderaciones[instrumento]})
             
     return insert, update, no_update
+
+
+def func_grupos_y_simbolos(grupos_reales,grupos_simbolos):
+    # Une los grupos reales con los grupos de cada simbolo
+    
+    grupos = list()
+    
+    for grupo in grupos_reales:
+        for datos in grupos_simbolos:
+            if grupo[0] == datos[0]:
+                grupos.append([
+                    grupo[0],
+                    grupo[1],
+                    grupo[2],
+                    datos[1],
+                    datos[2] if datos[2] is not None else 0
+                ])
+    
+    return grupos
