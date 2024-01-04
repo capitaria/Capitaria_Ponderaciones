@@ -16,7 +16,6 @@ def func_sel_instrumentos_faltantes(conexion):
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
-        and pr.symbol = 'WTI'
         -- and pr.symbol in ('USDCLP','T.NINTENDO','TSE.WEED','USDJPY')
     """
     cursor.execute(query_instrumentos_faltantes)
@@ -234,7 +233,7 @@ def func_sel_grupos_reales(conexion):
         and mg."Group" not ilike '%sta%'
         and mg."Group" not ilike '%ins%mesa%'
         and mg."Group_ID" not in (5,10,14) -- GRUPO NO ENCONTRADOS
-        and mg."Group_ID" in (147,148,554) -- COMENTAR
+        -- and mg."Group_ID" in (147,148,554) -- COMENTAR
     """
 
     cursor.execute(query_grupos_reales)

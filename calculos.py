@@ -200,7 +200,7 @@ def func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones):
 
 
 def func_grupos_y_simbolos(grupos_reales,grupos_simbolos):
-    # Une los grupos reales con los grupos de cada simbolo
+    #Une los grupos reales con los grupos de cada simbolo
     
     grupos = list()
     
@@ -216,3 +216,19 @@ def func_grupos_y_simbolos(grupos_reales,grupos_simbolos):
                 ])
     
     return grupos
+
+def func_agrupacion_categoria(grupos):
+    # Agrupa por Categoria
+    
+    grupos_dict = {} # Crear un diccionario para almacenar los grupos
+
+    # Iterar sobre cada elemento de la lista
+    for dato in grupos:
+        agrupar = (dato[2], dato[3], dato[4])  # Definir la clave para la agrupación
+        if agrupar not in grupos_dict:
+            grupos_dict[agrupar] = [dato[2], dato[3], dato[4], []]
+        grupos_dict[agrupar][-1].append(dato[0])
+
+    # Obtener la lista final de listas
+    agrupacion = list(grupos_dict.values())
+    return agrupacion

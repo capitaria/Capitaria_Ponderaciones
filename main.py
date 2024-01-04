@@ -13,8 +13,9 @@ try:
         grupos_reales = func_sel_grupos_reales(conexion)
         grupos_simbolos = func_sel_grupos_simbolos(conexion)
         grupos = func_grupos_y_simbolos(grupos_reales,grupos_simbolos)
-        #todo - Tratando de obtener el diferencial de Spread Premium
-        print(grupos)
+        agrupacion = func_agrupacion_categoria(grupos)
+        print(agrupacion)
+        print(len(agrupacion))
         #! nuevas_ponderaciones = func_ponderaciones_campos_calculados(nuevas_ponderaciones,instrumentos_faltantes,monto_moneda_a_usd)
         #! viejas_ponderaciones = func_sel_instrumentos_old(conexion, instrumentos_faltantes)
         #! insert, update, no_update = func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones)
