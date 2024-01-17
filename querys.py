@@ -16,6 +16,7 @@ def func_sel_instrumentos_faltantes(conexion):
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
+        and pr.symbol in ('WTI','BRENT')
         -- and pr.symbol in ('USDCLP','T.NINTENDO','TSE.WEED','USDJPY')
     """
     cursor.execute(query_instrumentos_faltantes)
@@ -48,8 +49,9 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
         ms."ContractSize" as tamaño_1_lote,
         ms."VolumeMin"/10000 as monto_operacion_min,
         ms."VolumeMax"/10000 as monto_operacion_max,
-        ms."Spread" as spread_pro,
-        null as spread_premium,
+        ms."Spread" as spread_full,
+        -- null as spread_premium,
+        -- null as spread_vip,
         ms."SwapLong" as swap_compra,
         ms."SwapShort" as swap_venta
     from
@@ -75,18 +77,21 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
         contractsize = item[3]
         volumemin = item[4]
         volumemax = item[5]
-        spread = item[6]
-        swapmode = item[7]
-        swaplong = item[8]
-        swapshort = item[9]
+        spread_full = item[6]
+        # spread_premium = item[7]
+        # spread_vip = item[8]
+        #swapmode = item[9]
+        swaplong = item[7]
+        swapshort = item[8]
         ponderacion_base[symbol] = {
             'path': path,
             'moneda_base' : currencybase,
             'tamanio_1_lote' : int(contractsize),
             'monto_operacion_min' : round(volumemin,1),
             'monto_operacion_max' : round(volumemax,1),
-            'spread_pro' : round(spread,1),
+            'spread_full' : round(spread_full,1),
             'spread_premium' : None,
+            # 'spread_vip' : None,
             'swap_compra': round(swaplong,4),
             'swap_venta': round(swapshort,4),
             }
@@ -233,7 +238,7 @@ def func_sel_grupos_reales(conexion):
         and mg."Group" not ilike '%sta%'
         and mg."Group" not ilike '%ins%mesa%'
         and mg."Group_ID" not in (5,10,14) -- GRUPO NO ENCONTRADOS
-        -- and mg."Group_ID" in (147,148,554) -- COMENTAR
+        and mg."Group_ID" in (147,148,554, 450) -- COMENTAR
     """
 
     cursor.execute(query_grupos_reales)
@@ -264,7 +269,8 @@ def func_sel_grupos_simbolos(conexion):
         mgs."SpreadDiff" as spread_premium_diff
     from
         mt5_groups_symbols mgs
-        -- where mgs."Group_ID" in (147,148) -- COMENTAR
+        where mgs."Group_ID" in (147,148,554, 450) -- COMENTAR
+        and mgs."Path" like '%WTI'
     """
 
     cursor.execute(query_grupos_simbolos)
