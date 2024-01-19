@@ -105,15 +105,6 @@ def func_monto_usd(moneda, monto_a_usd):
     return calculo_a_monto_usd
 
 
-def func_ponderacion(spread_pro, spread_go):
-    #! Borrar
-    #Calcula las Ponderaciones Pro y Premium (que siempre son las mismas)
-    if spread_pro > 0:
-        ponderacion = round(spread_pro/spread_go,3)
-    else:
-        ponderacion = 1
-    
-    return ponderacion
 
 
 def func_ponderaciones_campos_no_calculados(ponderacion_base):
@@ -145,7 +136,7 @@ def func_ponderaciones_campos_no_calculados(ponderacion_base):
 
 
 def func_ponderaciones_campos_calculados(nuevas_ponderaciones,instrumentos_faltantes,calculo_a_usd):
-    #* Se agrega los campos calculados (tipo_instrumento, tipo, precio, monto_usd, poderacion_pro y poderacion_vip)
+    #* Se agrega los campos calculados (tipo_instrumento, tipo, precio, monto_usd)
     for instrumento in nuevas_ponderaciones:
         nuevas_ponderaciones[instrumento]['tipo_instrumento'] = (
             func_tipo_instrumento(
@@ -163,16 +154,7 @@ def func_ponderaciones_campos_calculados(nuevas_ponderaciones,instrumentos_falta
                 nuevas_ponderaciones[instrumento]['moneda_calculo'],calculo_a_usd
             )
         )
-        # nuevas_ponderaciones[instrumento]['poderacion_pro'] = (
-        #     func_ponderacion(
-        #         nuevas_ponderaciones[instrumento]['spread_pro'],
-        #         nuevas_ponderaciones[instrumento]['spread_go']
-        #     )
-        # )
-        # nuevas_ponderaciones[instrumento]['poderacion_vip'] = (
-        #     nuevas_ponderaciones[instrumento]['poderacion_pro']
-        # )
-    
+
         for key, val in instrumentos_faltantes[instrumento].items():
             if key == 'precio':
                 nuevas_ponderaciones[instrumento]['precio'] = round(val,4)
@@ -189,16 +171,18 @@ def func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones):
     no_update = dict()
     insert = dict()
 
-    for instrumento in nuevas_ponderaciones:
-        if instrumento in viejas_ponderaciones:
-            if viejas_ponderaciones[instrumento]['poderacion_pro'] != nuevas_ponderaciones[instrumento]['poderacion_pro'] or viejas_ponderaciones[instrumento]['precio'] != nuevas_ponderaciones[instrumento]['precio']:
-                update.update({instrumento:nuevas_ponderaciones[instrumento]})
-            else:
-                no_update.update({instrumento:nuevas_ponderaciones[instrumento]})
-        else:
-            insert.update({instrumento:nuevas_ponderaciones[instrumento]})
+    return nuevas_ponderaciones
+    #todo - Aca debo ir a ver el codigo
+    # for instrumento in nuevas_ponderaciones:
+    #     if instrumento in viejas_ponderaciones:
+    #         if viejas_ponderaciones[instrumento]['poderacion_pro'] != nuevas_ponderaciones[instrumento]['poderacion_pro'] or viejas_ponderaciones[instrumento]['precio'] != nuevas_ponderaciones[instrumento]['precio']:
+    #             update.update({instrumento:nuevas_ponderaciones[instrumento]})
+    #         else:
+    #             no_update.update({instrumento:nuevas_ponderaciones[instrumento]})
+    #     else:
+    #         insert.update({instrumento:nuevas_ponderaciones[instrumento]})
             
-    return insert, update, no_update
+    # return insert, update, no_update
 
 
 def func_grupos_y_simbolos(grupos_reales,grupos_simbolos):
@@ -237,14 +221,50 @@ def func_agrupacion_categoria(grupos):
 
 
 def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupacion):
-    #todo
-    for lista in agrupacion:
-        for instrumento in nuevas_ponderaciones:
-            if lista[1] == nuevas_ponderaciones[instrumento]['path']:
-                nuevas_ponderaciones[instrumento]['categoria'] = lista[0]
-                nuevas_ponderaciones[instrumento]['spread_dif'] = lista[2]
-                nuevas_ponderaciones[instrumento]['spread_premium'] = 'pre'
-                nuevas_ponderaciones[instrumento]['spread_vip'] = 'vip'
-                nuevas_ponderaciones[instrumento]['grupos_id'] = lista[3]
-            print(nuevas_ponderaciones)
-    #return nuevas_ponderaciones
+    nuevas_ponderaciones2 = dict()
+
+    # for lista in agrupacion:
+    for instrumento in nuevas_ponderaciones:
+        path = nuevas_ponderaciones[instrumento]['path']
+        for lista in agrupacion:
+            if path == lista[1]:
+                #nuevas_ponderaciones[instrumento]
+                key = instrumento+lista[0]+str(lista[2])
+                nuevas_ponderaciones2[key] = {
+                    'instrumento' : instrumento,
+                    'tipo_instrumento' : nuevas_ponderaciones[instrumento]['tipo_instrumento'],
+                    'tipo' : nuevas_ponderaciones[instrumento]['tipo'],
+                    'monto_usd' : nuevas_ponderaciones[instrumento]['monto_usd'],
+                    'categoria' : lista[0],
+                    'path' : nuevas_ponderaciones[instrumento]['path'],
+                    'moneda_calculo' : nuevas_ponderaciones[instrumento]['moneda_calculo'],
+                    'precio' : nuevas_ponderaciones[instrumento]['precio'],
+                    'tamanio_contrato' : nuevas_ponderaciones[instrumento]['tamanio_contrato'],
+                    'spread_full' : nuevas_ponderaciones[instrumento]['spread_full'],
+                    'spread_diff' : lista[2],
+                    'spread_premium' : nuevas_ponderaciones[instrumento]['spread_full'] + lista[2],
+                    'spread_vip' : nuevas_ponderaciones[instrumento]['spread_full'] + lista[2],
+                    'ponderacion_full' : float(1),
+                    'ponderacion_premium' : round((nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]) / nuevas_ponderaciones[instrumento]['spread_full'],3),
+                    'ponderacion_vip' : round((nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]) / nuevas_ponderaciones[instrumento]['spread_full'],3),
+                    'grupos_id' : ', '.join(map(str, lista[3])),
+                    'fecha_insercion_precio' : nuevas_ponderaciones[instrumento]['fecha_insercion_precio'],
+                    'fecha_insercion_registro' : nuevas_ponderaciones[instrumento]['fecha_insercion_registro']
+                }
+    return nuevas_ponderaciones2
+
+
+
+
+
+
+
+def func_ponderacion(spread_pro, spread_go):
+    #! Borrar
+    #Calcula las Ponderaciones Pro y Premium (que siempre son las mismas)
+    if spread_pro > 0:
+        ponderacion = round(spread_pro/spread_go,3)
+    else:
+        ponderacion = 1
+    
+    return ponderacion

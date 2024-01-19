@@ -157,20 +157,24 @@ def func_sel_instrumentos_old(conexion, instrumentos_faltantes):
     cursor = conexion.cursor()
     query_instrumentos_old = f"""
     select 
+        codigo,
         instrumento,
         tipo_instrumento,
         tipo,
+        categoria,
         precio,
         tamano_contrato,
         moneda_calculo,
         coalesce(monto_usd,0) as monto_usd,
-        spread_go,
-        spread_pro,
+        spread_full,
+        spread_diff,
+        spread_premium,
         spread_vip,
-        poderacion_go,
-        poderacion_pro,
-        poderacion_vip,
+        ponderacion_full,
+        ponderacion_premium,
+        ponderacion_vip,
         "path",
+        grupos_id,
         fecha_insercion_precio,
         fecha_insercion_registro
     from 
@@ -184,33 +188,39 @@ def func_sel_instrumentos_old(conexion, instrumentos_faltantes):
     viejas_ponderaciones = dict()
     
     for item in old_instrumentos:
-        instrumento = item[0]
-        tipo_instrumento = item[1]
-        tipo = item[2]
-        precio = item[3]
-        tamanio_contrato = item[4]
-        moneda_calculo = item[5]
-        monto_usd = item[6]
-        spread_go = item[7]
-        spread_pro = item[8]
-        spread_vip = item[9]
-        poderacion_go = item[10]
-        poderacion_pro = item[11]
-        poderacion_vip = item[12]
-        fecha_insercion_precio = item[13]
-        viejas_ponderaciones[instrumento] = {
-            'tipo_instrumento': tipo_instrumento,
+        codigo = item[0]
+        instrumento = item[1]
+        tipo_instrumento = item[2]
+        tipo = item[3]
+        categoria = item[4]
+        precio = item[5]
+        tamanio_contrato = item[6]
+        moneda_calculo = item[7]
+        monto_usd = item[8]
+        spread_full = item[9]
+        spread_diff = item[10]
+        spread_premium = item[11]
+        spread_vip = item[12]
+        poderacion_full = item[13]
+        poderacion_premium = item[14]
+        poderacion_vip = item[15]
+        fecha_insercion_precio = item[16]
+        viejas_ponderaciones[codigo] = {
+            'instrumento' : instrumento,
+            'tipo_instrumento' : tipo_instrumento,
             'tipo' : tipo,
+            'categoria' : categoria,
             'precio' : round(precio,4),
             'tamanio_contrato' : int(tamanio_contrato),
             'moneda_calculo' : moneda_calculo,
             #'monto_usd' : round((monto_usd if monto_usd != None else 0),4),
             'monto_usd' : round(monto_usd,4),
-            'spread_go' : round(spread_go,4),
-            'spread_pro': round(spread_pro,4),
+            'spread_full' : round(spread_full,4),
+            'spread_diff' : round(spread_diff,4),
+            'spread_premium': round(spread_premium,4),
             'spread_vip': round(spread_vip,4),
-            'poderacion_go': round(poderacion_go,4),
-            'poderacion_pro': round(poderacion_pro,4),
+            'poderacion_full': round(poderacion_full,4),
+            'poderacion_premium': round(poderacion_premium,4),
             'poderacion_vip': round(poderacion_vip,4),
             'fecha_insercion_precio': fecha_insercion_precio,
             }
@@ -270,7 +280,7 @@ def func_sel_grupos_simbolos(conexion):
     from
         mt5_groups_symbols mgs
         where mgs."Group_ID" in (147,148,554, 450) -- COMENTAR
-        and mgs."Path" like '%WTI'
+        -- and mgs."Path" like '%WTI'
     """
 
     cursor.execute(query_grupos_simbolos)
@@ -441,26 +451,31 @@ def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
     # inserta en reports.rp_ponderacionxsymbol_python_update
     if len(nuevas_ponderaciones) >= 1:
         new_ponderaciones_insert_historic = list()
-        for i in nuevas_ponderaciones:
+        for codigo in nuevas_ponderaciones:
             datos = [
-                i,
-                nuevas_ponderaciones[i]['tipo_instrumento'],
-                nuevas_ponderaciones[i]['tipo'],
-                nuevas_ponderaciones[i]['precio'],
-                nuevas_ponderaciones[i]['tamanio_contrato'],
-                nuevas_ponderaciones[i]['moneda_calculo'],
-                nuevas_ponderaciones[i]['monto_usd'],
-                nuevas_ponderaciones[i]['spread_go'],
-                nuevas_ponderaciones[i]['spread_pro'],
-                nuevas_ponderaciones[i]['spread_vip'],
-                nuevas_ponderaciones[i]['poderacion_go'],
-                nuevas_ponderaciones[i]['poderacion_pro'],
-                nuevas_ponderaciones[i]['poderacion_vip'],
-                nuevas_ponderaciones[i]['path'],
-                nuevas_ponderaciones[i]['fecha_insercion_precio'],
-                nuevas_ponderaciones[i]['fecha_insercion_registro']
+                codigo,
+                nuevas_ponderaciones[codigo]['instrumento'],
+                nuevas_ponderaciones[codigo]['tipo_instrumento'],
+                nuevas_ponderaciones[codigo]['tipo'],
+                nuevas_ponderaciones[codigo]['categoria'],
+                nuevas_ponderaciones[codigo]['precio'],
+                nuevas_ponderaciones[codigo]['tamanio_contrato'],
+                nuevas_ponderaciones[codigo]['moneda_calculo'],
+                nuevas_ponderaciones[codigo]['monto_usd'],
+                nuevas_ponderaciones[codigo]['spread_full'],
+                nuevas_ponderaciones[codigo]['spread_diff'],
+                nuevas_ponderaciones[codigo]['spread_premium'],
+                nuevas_ponderaciones[codigo]['spread_vip'],
+                nuevas_ponderaciones[codigo]['ponderacion_full'],
+                nuevas_ponderaciones[codigo]['ponderacion_premium'],
+                nuevas_ponderaciones[codigo]['ponderacion_vip'],
+                nuevas_ponderaciones[codigo]['path'],
+                nuevas_ponderaciones[codigo]['grupos_id'],
+                nuevas_ponderaciones[codigo]['fecha_insercion_precio'],
+                nuevas_ponderaciones[codigo]['fecha_insercion_registro']
             ]
             new_ponderaciones_insert_historic.append(tuple(datos))
+            
             
         cursor = conexion.cursor()
         
@@ -469,29 +484,33 @@ def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
         INSERT INTO
         reports.rp_ponderacionxsymbol_python_historical
         (
+            codigo,
             instrumento,
             tipo_instrumento,
             tipo,
+            categoria,
             precio,
             tamano_contrato,
             moneda_calculo,
             monto_usd,
-            spread_go,
-            spread_pro,
+            spread_full,
+            spread_diff,
+            spread_premium,
             spread_vip,
-            poderacion_go,
-            poderacion_pro,
-            poderacion_vip,
+            ponderacion_full,
+            ponderacion_premium,
+            ponderacion_vip,
             path,
+            grupos_id,
             fecha_insercion_precio,
             fecha_insercion_registro
         )
         VALUES
         (
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
         )
         """)
-
+    #return new_ponderaciones_insert_historic
         cursor.executemany(rp_ponderacionxsymbol_python,new_ponderaciones_insert_historic)
         conexion.commit()
         cursor.close()

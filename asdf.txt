@@ -1,0 +1,107 @@
+{
+    'BRENTVIP-50': {
+        'instrumento': 'BRENT'
+        'tipo_instrumento': 'COMMODITIES'
+        'tipo': 'COMMODITIES'
+        'monto_usd': 1.0
+        'categoria': 'VIP'
+        'path': 'CFD Commodities\\Spot\\BRENT'
+        'moneda_calculo': 'USD'
+        'precio': 78.63
+        'tamanio_contrato': 1000
+        'spread_full': 150
+        'spread_diff': -50
+        'spread_premium': 100
+        'spread_vip': 100
+        'ponderacion_full': 1.0
+        'ponderacion_premium': 0.667
+        'ponderacion_vip': 0.667
+        'grupos_id': [147, 148]
+        'fecha_insercion_precio': '2024-01-18 18:05:07.444'
+        'fecha_insercion_registro': '2024-01-19 13:44:33.618'
+    },
+    'BRENTPRE-50': {
+        'instrumento': 'BRENT'
+        'tipo_instrumento': 'COMMODITIES'
+        'tipo': 'COMMODITIES'
+        'monto_usd': 1.0
+        'categoria': 'PRE'
+        'path': 'CFD Commodities\\Spot\\BRENT'
+        'moneda_calculo': 'USD'
+        'precio': 78.63
+        'tamanio_contrato': 1000
+        'spread_full': 150
+        'spread_diff': -50
+        'spread_premium': 100
+        'spread_vip': 100
+        'ponderacion_full': 1.0
+        'ponderacion_premium': 0.667
+        'ponderacion_vip': 0.667
+        'grupos_id': [450, 554]
+        'fecha_insercion_precio': '2024-01-18 18:05:07.444'
+        'fecha_insercion_registro': '2024-01-19 13:44:33.618'
+    },
+    'WTIVIP-50': {
+        'instrumento': 'WTI'
+        'tipo_instrumento': 'COMMODITIES'
+        'tipo': 'COMMODITIES'
+        'monto_usd': 1.0
+        'categoria': 'VIP'
+        'path': 'CFD Commodities\\Spot\\WTI'
+        'moneda_calculo': 'USD'
+        'precio': 73.85
+        'tamanio_contrato': 1000
+        'spread_full': 200
+        'spread_diff': -50
+        'spread_premium': 150
+        'spread_vip': 150
+        'ponderacion_full': 1.0
+        'ponderacion_premium': 0.75
+        'ponderacion_vip': 0.75
+        'grupos_id': [147]
+        'fecha_insercion_precio': '2024-01-18 18:05:07.444'
+        'fecha_insercion_registro': '2024-01-19 13:44:33.618'
+    },
+    'WTIPRE-50': {
+        'instrumento': 'WTI'
+        'tipo_instrumento': 'COMMODITIES'
+        'tipo': 'COMMODITIES'
+        'monto_usd': 1.0
+        'categoria': 'PRE'
+        'path': 'CFD Commodities\\Spot\\WTI'
+        'moneda_calculo': 'USD'
+        'precio': 73.85
+        'tamanio_contrato': 1000
+        'spread_full': 200
+        'spread_diff': -50
+        'spread_premium': 150
+        'spread_vip': 150
+        'ponderacion_full': 1.0
+        'ponderacion_premium': 0.75
+        'ponderacion_vip': 0.75
+        'grupos_id': [450, 554]
+        'fecha_insercion_precio': '2024-01-18 18:05:07.444'
+        'fecha_insercion_registro': '2024-01-19 13:44:33.618'
+    },
+    'WTIVIP0': {
+        'instrumento': 'WTI'
+        'tipo_instrumento': 'COMMODITIES'
+        'tipo': 'COMMODITIES'
+        'monto_usd': 1.0
+        'categoria': 'VIP'
+        'path': 'CFD Commodities\\Spot\\WTI'
+        'moneda_calculo': 'USD'
+        'precio': 73.85
+        'tamanio_contrato': 1000
+        'spread_full': 200
+        'spread_diff': 0
+        'spread_premium': 200
+        'spread_vip': 200
+        'ponderacion_full': 1.0
+        'ponderacion_premium': 1.0
+        'ponderacion_vip': 1.0
+        'grupos_id': [148]
+        'fecha_insercion_precio': '2024-01-18 18:05:07.444'
+        'fecha_insercion_registro': '2024-01-19 13:44:33.618'
+    }
+}
