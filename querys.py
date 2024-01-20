@@ -189,40 +189,44 @@ def func_sel_instrumentos_old(conexion, instrumentos_faltantes):
     
     for item in old_instrumentos:
         codigo = item[0]
-        instrumento = item[1]
-        tipo_instrumento = item[2]
-        tipo = item[3]
-        categoria = item[4]
+        # instrumento = item[1]
+        # tipo_instrumento = item[2]
+        # tipo = item[3]
+        # categoria = item[4]
         precio = item[5]
         tamanio_contrato = item[6]
-        moneda_calculo = item[7]
+        # moneda_calculo = item[7]
         monto_usd = item[8]
-        spread_full = item[9]
-        spread_diff = item[10]
-        spread_premium = item[11]
-        spread_vip = item[12]
-        poderacion_full = item[13]
-        poderacion_premium = item[14]
-        poderacion_vip = item[15]
-        fecha_insercion_precio = item[16]
+        # spread_full = item[9]
+        # spread_diff = item[10]
+        # spread_premium = item[11]
+        # spread_vip = item[12]
+        ponderacion_full = item[13]
+        ponderacion_premium = item[14]
+        ponderacion_vip = item[15]
+        # path = item[16]
+        grupos_id = item[17]
+        # fecha_insercion_precio = item[1]
         viejas_ponderaciones[codigo] = {
-            'instrumento' : instrumento,
-            'tipo_instrumento' : tipo_instrumento,
-            'tipo' : tipo,
-            'categoria' : categoria,
+            # 'instrumento' : instrumento,
+            # 'tipo_instrumento' : tipo_instrumento,
+            # 'tipo' : tipo,
+            # 'categoria' : categoria,
             'precio' : round(precio,4),
             'tamanio_contrato' : int(tamanio_contrato),
-            'moneda_calculo' : moneda_calculo,
-            #'monto_usd' : round((monto_usd if monto_usd != None else 0),4),
+            # 'moneda_calculo' : moneda_calculo,
+            # 'monto_usd' : round((monto_usd if monto_usd != None else 0),4),
             'monto_usd' : round(monto_usd,4),
-            'spread_full' : round(spread_full,4),
-            'spread_diff' : round(spread_diff,4),
-            'spread_premium': round(spread_premium,4),
-            'spread_vip': round(spread_vip,4),
-            'poderacion_full': round(poderacion_full,4),
-            'poderacion_premium': round(poderacion_premium,4),
-            'poderacion_vip': round(poderacion_vip,4),
-            'fecha_insercion_precio': fecha_insercion_precio,
+            # 'spread_full' : round(spread_full,4),
+            # 'spread_diff' : round(spread_diff,4),
+            # 'spread_premium': round(spread_premium,4),
+            # 'spread_vip': round(spread_vip,4),
+            'ponderacion_full': round(ponderacion_full,4),
+            'ponderacion_premium': round(ponderacion_premium,4),
+            'ponderacion_vip': round(ponderacion_vip,4),
+            # 'path' : path,
+            'grupos_id' : grupos_id,
+            # 'fecha_insercion_precio': fecha_insercion_precio,
             }
         
     return viejas_ponderaciones
@@ -328,27 +332,31 @@ def func_ins_datos_ponderados(conexion, insert):
     # inserta en reports.rp_ponderacionxsymbol_python_update
     if len(insert) >= 1:
         new_ponderaciones_insert = list()
-        for i in insert:
+        for codigo in insert:
             datos = [
-                i,
-                insert[i]['tipo_instrumento'],
-                insert[i]['tipo'],
-                insert[i]['precio'],
-                insert[i]['tamanio_contrato'],
-                insert[i]['moneda_calculo'],
-                insert[i]['monto_usd'],
-                insert[i]['spread_go'],
-                insert[i]['spread_pro'],
-                insert[i]['spread_vip'],
-                insert[i]['poderacion_go'],
-                insert[i]['poderacion_pro'],
-                insert[i]['poderacion_vip'],
-                insert[i]['path'],
-                insert[i]['fecha_insercion_precio'],
-                insert[i]['fecha_insercion_registro']
+                codigo,
+                insert[codigo]['instrumento'],
+                insert[codigo]['tipo_instrumento'],
+                insert[codigo]['tipo'],
+                insert[codigo]['categoria'],
+                insert[codigo]['precio'],
+                insert[codigo]['tamanio_contrato'],
+                insert[codigo]['moneda_calculo'],
+                insert[codigo]['monto_usd'],
+                insert[codigo]['spread_full'],
+                insert[codigo]['spread_diff'],
+                insert[codigo]['spread_premium'],
+                insert[codigo]['spread_vip'],
+                insert[codigo]['ponderacion_full'],
+                insert[codigo]['ponderacion_premium'],
+                insert[codigo]['ponderacion_vip'],
+                insert[codigo]['path'],
+                insert[codigo]['grupos_id'],
+                insert[codigo]['fecha_insercion_precio'],
+                insert[codigo]['fecha_insercion_registro']
             ]
             new_ponderaciones_insert.append(tuple(datos))
-            
+        
         cursor = conexion.cursor()
         
         rp_ponderacionxsymbol_python = (
@@ -356,26 +364,30 @@ def func_ins_datos_ponderados(conexion, insert):
         INSERT INTO
         reports.rp_ponderacionxsymbol_python_update
         (
+            codigo,
             instrumento,
             tipo_instrumento,
             tipo,
+            categoria,
             precio,
             tamano_contrato,
             moneda_calculo,
             monto_usd,
-            spread_go,
-            spread_pro,
+            spread_full,
+            spread_diff,
+            spread_premium,
             spread_vip,
-            poderacion_go,
-            poderacion_pro,
-            poderacion_vip,
+            ponderacion_full,
+            ponderacion_premium,
+            ponderacion_vip,
             path,
+            grupos_id,
             fecha_insercion_precio,
             fecha_insercion_registro
         )
         VALUES
         (
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
         )
         """)
 
@@ -390,24 +402,28 @@ def func_upd_datos_ponderados(conexion, update):
     
     if len(update) >= 1:
         new_ponderaciones_update = list()
-        for i in update:
+        for codigo in update:
             datos = [
-                update[i]['tipo_instrumento'],
-                update[i]['tipo'],
-                update[i]['precio'],
-                update[i]['tamanio_contrato'],
-                update[i]['moneda_calculo'],
-                update[i]['monto_usd'],
-                update[i]['spread_go'],
-                update[i]['spread_pro'],
-                update[i]['spread_vip'],
-                update[i]['poderacion_go'],
-                update[i]['poderacion_pro'],
-                update[i]['poderacion_vip'],
-                update[i]['path'],
-                update[i]['fecha_insercion_precio'],
-                update[i]['fecha_insercion_registro'],
-                i
+                codigo,
+                # update[codigo]['instrumento'],
+                # update[codigo]['tipo_instrumento'],
+                # update[codigo]['tipo'],
+                # update[codigo]['categoria'],
+                update[codigo]['precio'],
+                # update[codigo]['tamanio_contrato'],
+                # update[codigo]['moneda_calculo'],
+                update[codigo]['monto_usd'],
+                update[codigo]['spread_full'],
+                update[codigo]['spread_diff'],
+                update[codigo]['spread_premium'],
+                update[codigo]['spread_vip'],
+                update[codigo]['ponderacion_full'],
+                update[codigo]['ponderacion_premium'],
+                update[codigo]['ponderacion_vip'],
+                # update[codigo]['path'],
+                update[codigo]['grupos_id'],
+                update[codigo]['fecha_insercion_precio'],
+                update[codigo]['fecha_insercion_registro']
             ]
             new_ponderaciones_update.append(datos)
             
@@ -418,31 +434,35 @@ def func_upd_datos_ponderados(conexion, update):
         update
         reports.rp_ponderacionxsymbol_python_update
         set
-            tipo_instrumento = %s,
-            tipo = %s,
+            -- instrumento = %s
+            -- tipo_instrumento = %s,
+            -- tipo = %s,
+            -- categoria = %s,
             precio = %s,
-            tamano_contrato = %s,
-            moneda_calculo = %s,
+            -- tamano_contrato = %s,
+            -- moneda_calculo = %s,
             monto_usd = %s,
-            spread_go = %s,
-            spread_pro = %s,
+            spread_full = %s,
+            spread_diff = %s,
+            spread_premium = %s,
             spread_vip = %s,
-            poderacion_go = %s,
-            poderacion_pro = %s,
-            poderacion_vip = %s,
-            "path" = %s,
+            ponderacion_full = %s,
+            ponderacion_premium = %s,
+            ponderacion_vip = %s,
+            -- path = %s,
+            grupos_id = %s,
             fecha_insercion_precio = %s,
             fecha_insercion_registro = %s
         where
-            instrumento = %s
+            codigo = %s
         """)
 
-        for datos_update in new_ponderaciones_update:
-            cursor.execute(rp_ponderacionxsymbol_python, datos_update)
-            #print(datos_update)    
-            conexion.commit()
+        # for datos_update in new_ponderaciones_update:
+        #     cursor.execute(rp_ponderacionxsymbol_python, datos_update)
+        #     print(datos_update)    
+        #     # conexion.commit()
         
-        conexion.close()
+        # conexion.close()
 
 #^ FIN UPDATE
 

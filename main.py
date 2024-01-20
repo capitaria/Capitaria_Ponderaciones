@@ -23,14 +23,15 @@ try:
         #print(nuevas_ponderaciones)
         
         
-        viejas_ponderaciones = func_sel_instrumentos_old(conexion, instrumentos_faltantes)
-        
-        print(func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones)) #todo - Corregir
-        #insert, update, no_update = func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones) #todo - Corregir
+        viejas_ponderaciones = func_sel_instrumentos_old(conexion, instrumentos_faltantes)        
+        insert, update, no_update = func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones)
         #print(f"\n\nNuevo: {[symbol for symbol in insert]}\n\nActualizado: {[symbol for symbol in update]}\n\nNo Actualizado: {[symbol for symbol in no_update]}")
-        #! func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones) #& para la tabla rp_ponderacionxsymbol_python_historical
-        #! func_ins_datos_ponderados(conexion, insert) #& para la tabla rp_ponderacionxsymbol_python_update
-        #! func_upd_datos_ponderados(conexion, update) #& para la tabla rp_ponderacionxsymbol_python_update
+        
+        #func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones) #& para la tabla rp_ponderacionxsymbol_python_historical
+        #func_ins_datos_ponderados(conexion, insert) #& para la tabla rp_ponderacionxsymbol_python_update
+        
+        #todo - Trabajo en el Update
+        func_upd_datos_ponderados(conexion, update) #& para la tabla rp_ponderacionxsymbol_python_update
 except psql().Error as e:
     print("Error al conectar a la base de datos PostgreSQL: {}".format(e))
 finally:

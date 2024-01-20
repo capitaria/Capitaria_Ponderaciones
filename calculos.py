@@ -171,18 +171,21 @@ def func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones):
     no_update = dict()
     insert = dict()
 
-    return nuevas_ponderaciones
-    #todo - Aca debo ir a ver el codigo
-    # for instrumento in nuevas_ponderaciones:
-    #     if instrumento in viejas_ponderaciones:
-    #         if viejas_ponderaciones[instrumento]['poderacion_pro'] != nuevas_ponderaciones[instrumento]['poderacion_pro'] or viejas_ponderaciones[instrumento]['precio'] != nuevas_ponderaciones[instrumento]['precio']:
-    #             update.update({instrumento:nuevas_ponderaciones[instrumento]})
-    #         else:
-    #             no_update.update({instrumento:nuevas_ponderaciones[instrumento]})
-    #     else:
-    #         insert.update({instrumento:nuevas_ponderaciones[instrumento]})
+    for codigo in nuevas_ponderaciones:
+        if codigo in viejas_ponderaciones:
+            if (viejas_ponderaciones[codigo]['ponderacion_full'] != nuevas_ponderaciones[codigo]['ponderacion_full']
+                or viejas_ponderaciones[codigo]['ponderacion_premium'] != nuevas_ponderaciones[codigo]['ponderacion_premium']
+                or viejas_ponderaciones[codigo]['ponderacion_vip'] != nuevas_ponderaciones[codigo]['ponderacion_vip']
+                or viejas_ponderaciones[codigo]['grupos_id'] != nuevas_ponderaciones[codigo]['grupos_id']
+                or viejas_ponderaciones[codigo]['monto_usd'] != nuevas_ponderaciones[codigo]['monto_usd']
+                or viejas_ponderaciones[codigo]['precio'] != nuevas_ponderaciones[codigo]['precio']):
+                update.update({codigo:nuevas_ponderaciones[codigo]})
+            else:
+                no_update.update({codigo:nuevas_ponderaciones[codigo]})
+        else:
+            insert.update({codigo:nuevas_ponderaciones[codigo]})
             
-    # return insert, update, no_update
+    return insert, update, no_update
 
 
 def func_grupos_y_simbolos(grupos_reales,grupos_simbolos):
