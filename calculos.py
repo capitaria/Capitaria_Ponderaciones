@@ -248,25 +248,23 @@ def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupaci
                     'spread_premium' : nuevas_ponderaciones[instrumento]['spread_full'] + lista[2],
                     'spread_vip' : nuevas_ponderaciones[instrumento]['spread_full'] + lista[2],
                     'ponderacion_full' : float(1),
-                    'ponderacion_premium' : round((nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]) / nuevas_ponderaciones[instrumento]['spread_full'],3),
-                    'ponderacion_vip' : round((nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]) / nuevas_ponderaciones[instrumento]['spread_full'],3),
+                    'ponderacion_premium' : func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]),
+                    # 'ponderacion_premium' : round((nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]) / nuevas_ponderaciones[instrumento]['spread_full'],3),
+                    'ponderacion_vip' : func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]),
+                    # 'ponderacion_vip' : round((nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]) / nuevas_ponderaciones[instrumento]['spread_full'],3),
                     'grupos_id' : ', '.join(map(str, lista[3])),
                     'fecha_insercion_precio' : nuevas_ponderaciones[instrumento]['fecha_insercion_precio'],
                     'fecha_insercion_registro' : nuevas_ponderaciones[instrumento]['fecha_insercion_registro']
                 }
+    #print(nuevas_ponderaciones2)
     return nuevas_ponderaciones2
 
 
-
-
-
-
-
-def func_ponderacion(spread_pro, spread_go):
+def func_ponderacion(spread_full, spread_diff, spread_premium):
     #! Borrar
     #Calcula las Ponderaciones Pro y Premium (que siempre son las mismas)
-    if spread_pro > 0:
-        ponderacion = round(spread_pro/spread_go,3)
+    if (spread_full-spread_diff) > 0:
+        ponderacion = round(spread_full/spread_premium,3)
     else:
         ponderacion = 1
     

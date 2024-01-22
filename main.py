@@ -16,6 +16,7 @@ try:
         grupos_reales = func_sel_grupos_reales(conexion)
         grupos_simbolos = func_sel_grupos_simbolos(conexion)
         grupos = func_grupos_y_simbolos(grupos_reales,grupos_simbolos)
+        print(len(grupos)),breakpoint()
         agrupacion = func_agrupacion_categoria(grupos)
         #print(agrupacion)
         
@@ -25,13 +26,11 @@ try:
         
         viejas_ponderaciones = func_sel_instrumentos_old(conexion, instrumentos_faltantes)        
         insert, update, no_update = func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones)
-        #print(f"\n\nNuevo: {[symbol for symbol in insert]}\n\nActualizado: {[symbol for symbol in update]}\n\nNo Actualizado: {[symbol for symbol in no_update]}")
+        print(f"\n\nNuevo ({len(insert)}): {[symbol for symbol in insert]}\n\nActualizado ({len(update)}): {[symbol for symbol in update]}\n\nNo Actualizado ({len(no_update)}): {[symbol for symbol in no_update]}")
         
-        #func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones) #& para la tabla rp_ponderacionxsymbol_python_historical
+        func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones) #& para la tabla rp_ponderacionxsymbol_python_historical
         #func_ins_datos_ponderados(conexion, insert) #& para la tabla rp_ponderacionxsymbol_python_update
-        
-        #todo - Trabajo en el Update
-        func_upd_datos_ponderados(conexion, update) #& para la tabla rp_ponderacionxsymbol_python_update
+        #func_upd_datos_ponderados(conexion,update) #& para la tabla rp_ponderacionxsymbol_python_update
 except psql().Error as e:
     print("Error al conectar a la base de datos PostgreSQL: {}".format(e))
 finally:

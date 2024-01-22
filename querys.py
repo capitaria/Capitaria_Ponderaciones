@@ -16,8 +16,7 @@ def func_sel_instrumentos_faltantes(conexion):
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
-        and pr.symbol in ('WTI','BRENT')
-        -- and pr.symbol in ('USDCLP','T.NINTENDO','TSE.WEED','USDJPY')
+        -- and pr.symbol in ('USDCLP','T.NINTENDO','TSE.WEED','USDJPY','WTI','BRENT')
     """
     cursor.execute(query_instrumentos_faltantes)
     query_instrumentos_faltantes = cursor.fetchall()
@@ -252,7 +251,7 @@ def func_sel_grupos_reales(conexion):
         and mg."Group" not ilike '%sta%'
         and mg."Group" not ilike '%ins%mesa%'
         and mg."Group_ID" not in (5,10,14) -- GRUPO NO ENCONTRADOS
-        and mg."Group_ID" in (147,148,554, 450) -- COMENTAR
+        -- and mg."Group_ID" in (147,148,554, 450) -- COMENTAR
     """
 
     cursor.execute(query_grupos_reales)
@@ -283,7 +282,7 @@ def func_sel_grupos_simbolos(conexion):
         mgs."SpreadDiff" as spread_premium_diff
     from
         mt5_groups_symbols mgs
-        where mgs."Group_ID" in (147,148,554, 450) -- COMENTAR
+        -- where mgs."Group_ID" in (147,148,554, 450) -- COMENTAR
         -- and mgs."Path" like '%WTI'
     """
 
@@ -403,15 +402,8 @@ def func_upd_datos_ponderados(conexion, update):
     if len(update) >= 1:
         new_ponderaciones_update = list()
         for codigo in update:
-            datos = [
-                codigo,
-                # update[codigo]['instrumento'],
-                # update[codigo]['tipo_instrumento'],
-                # update[codigo]['tipo'],
-                # update[codigo]['categoria'],
+            datos = (
                 update[codigo]['precio'],
-                # update[codigo]['tamanio_contrato'],
-                # update[codigo]['moneda_calculo'],
                 update[codigo]['monto_usd'],
                 update[codigo]['spread_full'],
                 update[codigo]['spread_diff'],
@@ -420,27 +412,18 @@ def func_upd_datos_ponderados(conexion, update):
                 update[codigo]['ponderacion_full'],
                 update[codigo]['ponderacion_premium'],
                 update[codigo]['ponderacion_vip'],
-                # update[codigo]['path'],
                 update[codigo]['grupos_id'],
                 update[codigo]['fecha_insercion_precio'],
-                update[codigo]['fecha_insercion_registro']
-            ]
+                update[codigo]['fecha_insercion_registro'],
+                codigo
+            )
             new_ponderaciones_update.append(datos)
-            
-        cursor = conexion.cursor()
     
-        rp_ponderacionxsymbol_python = (
+        query_update = (
         f"""
-        update
-        reports.rp_ponderacionxsymbol_python_update
+        update reports.rp_ponderacionxsymbol_python_update
         set
-            -- instrumento = %s
-            -- tipo_instrumento = %s,
-            -- tipo = %s,
-            -- categoria = %s,
             precio = %s,
-            -- tamano_contrato = %s,
-            -- moneda_calculo = %s,
             monto_usd = %s,
             spread_full = %s,
             spread_diff = %s,
@@ -449,7 +432,6 @@ def func_upd_datos_ponderados(conexion, update):
             ponderacion_full = %s,
             ponderacion_premium = %s,
             ponderacion_vip = %s,
-            -- path = %s,
             grupos_id = %s,
             fecha_insercion_precio = %s,
             fecha_insercion_registro = %s
@@ -457,12 +439,15 @@ def func_upd_datos_ponderados(conexion, update):
             codigo = %s
         """)
 
-        # for datos_update in new_ponderaciones_update:
-        #     cursor.execute(rp_ponderacionxsymbol_python, datos_update)
-        #     print(datos_update)    
-        #     # conexion.commit()
+        cursor = conexion.cursor()
         
-        # conexion.close()
+  
+        # for datos_update in new_ponderaciones_update:
+        #     print(datos_update)
+        cursor.executemany(query_update, tuple(new_ponderaciones_update))
+
+        conexion.commit()
+        conexion.close()
 
 #^ FIN UPDATE
 
