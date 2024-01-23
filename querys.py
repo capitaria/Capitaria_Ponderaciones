@@ -16,7 +16,8 @@ def func_sel_instrumentos_faltantes(conexion):
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
-        -- and pr.symbol in ('USDCLP','T.NINTENDO','TSE.WEED','USDJPY','WTI','BRENT')
+        and pr.symbol in ('Cobre_Mar24','Palad_Mar24','Azu11_Mar24')
+        -- and pr.symbol in ('USDCLP','T.NINTENDO','TSE.WEED','USDJPY','WTI','BRENT','#TSLA')
     """
     cursor.execute(query_instrumentos_faltantes)
     query_instrumentos_faltantes = cursor.fetchall()
@@ -42,19 +43,19 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
     cursor = conexion.cursor()
     query_mt5_symbols = f"""
     select
-        ms."Symbol" as nemo,
-        ms."Path" as path,
+        ms."Symbol" as instrumento,
+        ms."Path" as path_instrumento,
+        rpp.path_grupo as path_grupo,
         ms."CurrencyBase" as moneda_base,
         ms."ContractSize" as tamaño_1_lote,
         ms."VolumeMin"/10000 as monto_operacion_min,
         ms."VolumeMax"/10000 as monto_operacion_max,
         ms."Spread" as spread_full,
-        -- null as spread_premium,
-        -- null as spread_vip,
         ms."SwapLong" as swap_compra,
         ms."SwapShort" as swap_venta
     from
-        mt5_symbols ms
+        mt5_symbols ms inner join reports.rp_ponderaciones_path rpp
+        on ms."Symbol" = rpp.instrumento
     where
         ms."Symbol" in {tuple([x for x in instrumentos_faltantes]) if len([x for x in instrumentos_faltantes]) > 1 else f"('{[x for x in instrumentos_faltantes][0]}')"}
         and ms."Path" not ilike '%historicos%'
@@ -70,27 +71,24 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
     ponderacion_base = dict()
     
     for item in query_mt5_symbols:
-        symbol = item[0]
-        path = item[1]
-        currencybase = item[2]
-        contractsize = item[3]
-        volumemin = item[4]
-        volumemax = item[5]
-        spread_full = item[6]
-        # spread_premium = item[7]
-        # spread_vip = item[8]
-        #swapmode = item[9]
-        swaplong = item[7]
-        swapshort = item[8]
-        ponderacion_base[symbol] = {
-            'path': path,
+        instrumento = item[0]
+        path_instrumento = item[1]
+        path_grupo = item[2]
+        currencybase = item[3]
+        contractsize = item[4]
+        volumemin = item[5]
+        volumemax = item[6]
+        spread_full = item[7]
+        swaplong = item[8]
+        swapshort = item[9]
+        ponderacion_base[instrumento] = {
+            'path_instrumento': path_instrumento,
+            'path_grupo' : path_grupo,
             'moneda_base' : currencybase,
             'tamanio_1_lote' : int(contractsize),
             'monto_operacion_min' : round(volumemin,1),
             'monto_operacion_max' : round(volumemax,1),
             'spread_full' : round(spread_full,1),
-            'spread_premium' : None,
-            # 'spread_vip' : None,
             'swap_compra': round(swaplong,4),
             'swap_venta': round(swapshort,4),
             }
@@ -251,7 +249,6 @@ def func_sel_grupos_reales(conexion):
         and mg."Group" not ilike '%sta%'
         and mg."Group" not ilike '%ins%mesa%'
         and mg."Group_ID" not in (5,10,14) -- GRUPO NO ENCONTRADOS
-        -- and mg."Group_ID" in (147,148,554, 450) -- COMENTAR
     """
 
     cursor.execute(query_grupos_reales)
@@ -282,8 +279,19 @@ def func_sel_grupos_simbolos(conexion):
         mgs."SpreadDiff" as spread_premium_diff
     from
         mt5_groups_symbols mgs
-        -- where mgs."Group_ID" in (147,148,554, 450) -- COMENTAR
-        -- and mgs."Path" like '%WTI'
+	where mgs."Group_ID" in (
+		select 
+		    mg."Group_ID" as grupo_id
+		from
+		    mt5_groups mg
+		where
+		    mg."Group" ilike 'real%'
+		    and mg."Group" not ilike '%lite%'
+		    and mg."Group" not ilike '%sta%'
+		    and mg."Group" not ilike '%ins%mesa%'
+		    -- and mg."Group_ID" not in (5,10,14)
+		    and mg."Group_ID" in (456)
+	)
     """
 
     cursor.execute(query_grupos_simbolos)
