@@ -16,7 +16,6 @@ try:
         grupos_reales = func_sel_grupos_reales(conexion)
         grupos_simbolos = func_sel_grupos_simbolos(conexion)
         grupos = func_grupos_y_simbolos(grupos_reales,grupos_simbolos)
-        print(len(grupos)),breakpoint()
         agrupacion = func_agrupacion_categoria(grupos)
         #print(agrupacion)
         
