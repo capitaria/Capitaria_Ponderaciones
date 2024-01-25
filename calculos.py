@@ -1,3 +1,13 @@
+
+def func_path_grupo_vacio(instrumentos_mt5, instrumentos_path):
+    sin_path_grupo = list()
+
+    for instrumento in instrumentos_mt5:
+        if instrumento[0] not in instrumentos_path:
+            sin_path_grupo.append(instrumento)
+            
+    return sin_path_grupo
+
 def func_tipo_instrumento(moneda, path):
     # Agrega el Tipo de Instrumento, tomando la moneda y el Path
     if 'ADR' in path:
@@ -166,12 +176,15 @@ def func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones):
 
     for codigo in nuevas_ponderaciones:
         if codigo in viejas_ponderaciones:
-            if (viejas_ponderaciones[codigo]['ponderacion_full'] != nuevas_ponderaciones[codigo]['ponderacion_full']
-                or viejas_ponderaciones[codigo]['ponderacion_premium'] != nuevas_ponderaciones[codigo]['ponderacion_premium']
-                or viejas_ponderaciones[codigo]['ponderacion_vip'] != nuevas_ponderaciones[codigo]['ponderacion_vip']
+            if (viejas_ponderaciones[codigo]['precio'] != nuevas_ponderaciones[codigo]['precio']
+                or viejas_ponderaciones[codigo]['spread_full'] != nuevas_ponderaciones[codigo]['spread_full']
+                or viejas_ponderaciones[codigo]['spread_diff'] != nuevas_ponderaciones[codigo]['spread_diff']
+                or viejas_ponderaciones[codigo]['spread_premium'] != nuevas_ponderaciones[codigo]['spread_premium']
+                or viejas_ponderaciones[codigo]['spread_vip'] != nuevas_ponderaciones[codigo]['spread_vip']
                 or viejas_ponderaciones[codigo]['grupos_id'] != nuevas_ponderaciones[codigo]['grupos_id']
                 or viejas_ponderaciones[codigo]['monto_usd'] != nuevas_ponderaciones[codigo]['monto_usd']
-                or viejas_ponderaciones[codigo]['precio'] != nuevas_ponderaciones[codigo]['precio']):
+                or viejas_ponderaciones[codigo]['path_instrumento'] != nuevas_ponderaciones[codigo]['path_instrumento']
+                or viejas_ponderaciones[codigo]['path_grupo'] != nuevas_ponderaciones[codigo]['path_grupo']):
                 update.update({codigo:nuevas_ponderaciones[codigo]})
             else:
                 no_update.update({codigo:nuevas_ponderaciones[codigo]})
@@ -217,16 +230,14 @@ def func_agrupacion_categoria(grupos):
 
 
 def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupacion):
-    #todo - Corrigiendo tema del PATH / ('Cobre_Mar24','Palad_Mar24','Azu11_Mar24') / grupo: 456
     nuevas_ponderaciones2 = dict()
 
     for instrumento in nuevas_ponderaciones:
-        path = nuevas_ponderaciones[instrumento]['path_instrumento']
-        # path_instrumento = nuevas_ponderaciones[instrumento]['path_instrumento']
-        # path_grupo = nuevas_ponderaciones[instrumento]['path_grupo']
-        # print(instrumento,path_instrumento,path_grupo)
+        path_instrumento = nuevas_ponderaciones[instrumento]['path_instrumento']
+        path_grupo = nuevas_ponderaciones[instrumento]['path_grupo']
+        #print(instrumento,path_instrumento,path_grupo)
         for lista in agrupacion:
-            if path == lista[1]:
+            if path_grupo == lista[1]:
                 key = instrumento+lista[0]+str(lista[2])
                 nuevas_ponderaciones2[key] = {
                     'instrumento' : instrumento,
@@ -234,7 +245,8 @@ def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupaci
                     'tipo' : nuevas_ponderaciones[instrumento]['tipo'],
                     'monto_usd' : nuevas_ponderaciones[instrumento]['monto_usd'],
                     'categoria' : lista[0],
-                    'pathX' : nuevas_ponderaciones[instrumento]['path_grupo'],
+                    'path_instrumento' : nuevas_ponderaciones[instrumento]['path_instrumento'],
+                    'path_grupo' : nuevas_ponderaciones[instrumento]['path_grupo'],
                     'moneda_calculo' : nuevas_ponderaciones[instrumento]['moneda_calculo'],
                     'precio' : nuevas_ponderaciones[instrumento]['precio'],
                     'tamanio_contrato' : nuevas_ponderaciones[instrumento]['tamanio_contrato'],
@@ -250,41 +262,6 @@ def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupaci
                     'fecha_insercion_registro' : nuevas_ponderaciones[instrumento]['fecha_insercion_registro']
                 }
     return nuevas_ponderaciones2
-
-# def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupacion):
-#     nuevas_ponderaciones2 = dict()
-
-#     for instrumento in nuevas_ponderaciones:
-#         path = nuevas_ponderaciones[instrumento]['path_instrumento']
-#         # path_instrumento = nuevas_ponderaciones[instrumento]['path_instrumento']
-#         # path_grupo = nuevas_ponderaciones[instrumento]['path_grupo']
-#         # print(instrumento,path_instrumento,path_grupo)
-#         for lista in agrupacion:
-#             if path == lista[1]:
-#                 key = instrumento+lista[0]+str(lista[2])
-#                 nuevas_ponderaciones2[key] = {
-#                     'instrumento' : instrumento,
-#                     'tipo_instrumento' : nuevas_ponderaciones[instrumento]['tipo_instrumento'],
-#                     'tipo' : nuevas_ponderaciones[instrumento]['tipo'],
-#                     'monto_usd' : nuevas_ponderaciones[instrumento]['monto_usd'],
-#                     'categoria' : lista[0],
-#                     'pathX' : nuevas_ponderaciones[instrumento]['path_grupo'],
-#                     'moneda_calculo' : nuevas_ponderaciones[instrumento]['moneda_calculo'],
-#                     'precio' : nuevas_ponderaciones[instrumento]['precio'],
-#                     'tamanio_contrato' : nuevas_ponderaciones[instrumento]['tamanio_contrato'],
-#                     'spread_full' : nuevas_ponderaciones[instrumento]['spread_full'],
-#                     'spread_diff' : lista[2],
-#                     'spread_premium' : nuevas_ponderaciones[instrumento]['spread_full'] + lista[2],
-#                     'spread_vip' : nuevas_ponderaciones[instrumento]['spread_full'] + lista[2],
-#                     'ponderacion_full' : float(1),
-#                     'ponderacion_premium' : func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]),
-#                     'ponderacion_vip' : func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]),
-#                     'grupos_id' : ', '.join(map(str, lista[3])),
-#                     'fecha_insercion_precio' : nuevas_ponderaciones[instrumento]['fecha_insercion_precio'],
-#                     'fecha_insercion_registro' : nuevas_ponderaciones[instrumento]['fecha_insercion_registro']
-#                 }
-#     return nuevas_ponderaciones2
-
 
 def func_ponderacion(spread_full, spread_diff, spread_premium):
     #! Borrar
