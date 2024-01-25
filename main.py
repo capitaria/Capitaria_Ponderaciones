@@ -1,10 +1,15 @@
 from con.connection import psql
 from querys import *
 from calculos import *
+from datetime import datetime # para trabajar con fechas
+from time import time as crono # cronometro
+
+fecha_consultada = datetime.now().date()
 
 try:
     conexion = psql()
     if conexion: # Verificar si la conexión está abierta
+        inicio = crono()
         print("Conexión exitosa a la base de datos PostgreSQL")
         
         #^ Creacion e insercion de Instrumento y Path instrumento inexistentes
@@ -37,8 +42,19 @@ try:
         
         #^ Inserta (tabla historica y update) y Actualiza (update) en la Base de Datos
         func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones) #& para la tabla rp_ponderacionxsymbol_python_historical
-        func_ins_datos_ponderados(conexion, insert) #& para la tabla rp_ponderacionxsymbol_python_update
-        func_upd_datos_ponderados(conexion,update) #& para la tabla rp_ponderacionxsymbol_python_update
+        fecha_prox_mes_fiscal_exacta, fecha_prox_mes_fiscal_correcta = func_mes_fiscal(fecha_consultada)
+        if fecha_consultada == fecha_prox_mes_fiscal_correcta: # Se actualiza los 25 de cada mes
+            func_ins_datos_ponderados(conexion, insert) #& para la tabla rp_ponderacionxsymbol_python_update
+            func_upd_datos_ponderados(conexion,update) #& para la tabla rp_ponderacionxsymbol_python_update
+            
+        #^ INFO
+        fin = crono()
+        print(f'\n******\n{"INFO ADICIONAL"}\n******\n') #^ TestPrint
+        print(tiempo_exacto(fin-inicio))
+        print(f"Fecha Consultada: \t\t\t\t{fecha_consultada}")
+        print(f"Fecha Proximo Mes Fiscal Exacta: \t\t{fecha_prox_mes_fiscal_exacta}")   
+        print(f"Fecha Proximo Mes Fiscal Correcta: \t\t{fecha_prox_mes_fiscal_correcta}")
+        
 except psql().Error as e:
     print("Error al conectar a la base de datos PostgreSQL: {}".format(e))
 finally:

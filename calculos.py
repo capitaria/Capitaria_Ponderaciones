@@ -1,3 +1,5 @@
+from datetime import timedelta # para agregar/quitar dias
+from dateutil.relativedelta import relativedelta # para agregar/quitar mes
 
 def func_path_grupo_vacio(instrumentos_mt5, instrumentos_path):
     sin_path_grupo = list()
@@ -272,3 +274,41 @@ def func_ponderacion(spread_full, spread_diff, spread_premium):
         ponderacion = 1
     
     return ponderacion
+
+#^ OTROS
+def func_mes_fiscal(fecha_consultada):
+        # Fecha cae despues del 25, obtiene el mes fiscal exacto del proximo mes
+    if fecha_consultada.day > 25:
+        fecha_prox_mes_fiscal_exacta = fecha_consultada.replace(day=25) + relativedelta(months=1)
+    # De lo contrario, el mes fiscal es el 25 del mes en curso
+    else:
+        fecha_prox_mes_fiscal_exacta = fecha_consultada.replace(day=25)
+        
+    # Fecha cae entre Lunes a Viernes
+    if fecha_prox_mes_fiscal_exacta.weekday() >= 0 and fecha_prox_mes_fiscal_exacta.weekday() <= 4:
+        # Fecha NO cae en Diciembre (ya que 25 es feriado)
+        if fecha_prox_mes_fiscal_exacta.month != 12:
+            fecha_prox_mes_fiscal_correcta = fecha_prox_mes_fiscal_exacta
+        else:
+            # Fecha cae entre Martes a Sabado, se resta 1 dia. 
+            if fecha_prox_mes_fiscal_exacta.weekday() >= 1 and fecha_prox_mes_fiscal_exacta.weekday() <= 4:
+                fecha_prox_mes_fiscal_correcta = (fecha_prox_mes_fiscal_exacta - timedelta(days=1))
+            # De lo contrario cae Lunes, se resta 3 dias.
+            else:
+                fecha_prox_mes_fiscal_correcta = (fecha_prox_mes_fiscal_exacta - timedelta(days=3))
+                
+    #Fecha cae el Sabado, se resta 1 dia.
+    elif fecha_prox_mes_fiscal_exacta.weekday() == 5:
+        fecha_prox_mes_fiscal_correcta = (fecha_prox_mes_fiscal_exacta - timedelta(days=1))
+    # De lo contrario cae el Domingo, se resta 2 dias.
+    else:
+        fecha_prox_mes_fiscal_correcta = (fecha_prox_mes_fiscal_exacta - timedelta(days=2))
+
+    return fecha_prox_mes_fiscal_exacta, fecha_prox_mes_fiscal_correcta
+
+def tiempo_exacto(xseg):
+    minutos = xseg // 60
+    segundos_restos = xseg % 60 # Obtengo los Segundos
+    minutos_restos = minutos % 60 # Obtengo los Minutos
+    return f"{round(minutos_restos)}m:{round(segundos_restos)}s"
+#^ FIN OTROS
