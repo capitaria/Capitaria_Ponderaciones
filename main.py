@@ -13,11 +13,16 @@ try:
         print("Conexión exitosa a la base de datos PostgreSQL")
         
         #^ Creacion e insercion de Instrumento y Path instrumento inexistentes
-        #^ se debe agregar Path grupo a mano en la tabla rp_ponderaciones_path
         instrumentos_mt5 = func_sel_mt5_instrumento_path(conexion) #& Obtiene todos los instrumentos y su Path
         instrumentos_path = func_sel_path_instrumento(conexion) #& Obtiene todos los instrumentos de la tabla rp_ponderaciones_path
-        sin_path_grupo = func_path_grupo_vacio(instrumentos_mt5, instrumentos_path) #& Se debe llenar el grupo a mano en la tabla rp_ponderaciones_path
-        func_ins_path(conexion, sin_path_grupo) #& Inserta el instrumento y el Path Instrumento en la tabla, se debe agregar a mano el Path Grupo
+        sin_path_grupo = func_path_grupo_vacio(instrumentos_mt5, instrumentos_path)
+        func_ins_path(conexion, sin_path_grupo) #& Inserta el instrumento y el Path Instrumento el Path Grupo es Nulo
+        
+        #^ Agrega el Path Grupo de forma automatica
+        paths_grupos_faltantes = func_sel_path_grupo_faltante(conexion)
+        paths_grupos = func_sel_grupos_existentes(conexion)
+        llenado_path_grupo = func_llenado_path_grupo(paths_grupos_faltantes, paths_grupos)
+        func_upd_path_grupo(conexion,llenado_path_grupo)
         
         #^ Crea los instrumentos faltantes y terminan en una variable llamada nuevas ponderaciones
         instrumentos_faltantes = func_sel_instrumentos_faltantes(conexion)
@@ -49,8 +54,11 @@ try:
             
         #^ INFO
         fin = crono()
-        print(f'\n******\n{"INFO ADICIONAL"}\n******\n') #^ TestPrint
-        print(tiempo_exacto(fin-inicio))
+        print(f'\n******\n{"INFO ADICIONAL"}\n******\n')
+        print(f"Tiempo Estimado: {tiempo_exacto(fin-inicio)}")
+        print(f"Instrumentos Nuevos: {len(insert)}")
+        print(f"Instrumentos Actualizados: {len(update)}")
+        print(f"Instrumentos No Actualizados: {len(no_update)}")
         print(f"Fecha Consultada: \t\t\t\t{fecha_consultada}")
         print(f"Fecha Proximo Mes Fiscal Exacta: \t\t{fecha_prox_mes_fiscal_exacta}")   
         print(f"Fecha Proximo Mes Fiscal Correcta: \t\t{fecha_prox_mes_fiscal_correcta}")
