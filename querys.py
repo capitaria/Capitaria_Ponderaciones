@@ -141,7 +141,7 @@ def func_sel_instrumentos_faltantes(conexion):
     from
         reports.rp_precios pr
     where
-        pr.fecha_insercion::date = '2024-02-02' -- now()::date
+        pr.fecha_insercion::date = '2024-02-12'
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
@@ -154,6 +154,7 @@ def func_sel_instrumentos_faltantes(conexion):
 	    )
         */
     """
+    # -- now()::date
     cursor.execute(query_instrumentos_faltantes)
     query_instrumentos_faltantes = cursor.fetchall()
 
@@ -284,8 +285,89 @@ def func_sel_monto_moneda_usd(conexion):
         return monto_moneda_a_usd
     
 
-def func_sel_instrumentos_old(conexion, instrumentos_faltantes):
-    # Obtiene los instrumentods de la base de datos
+def func_sel_instrumentos_old_historical(conexion, instrumentos_faltantes):
+    # Obtiene los instrumentods de la base de datos de la tabla rp_ponderacionxsymbol_python_historical
+    def func_fecha_maxima_historical(conexion):
+        # Obitiene la fecha Maxima de la inserciond e la tabla rp_ponderacionxsymbol_python_historical
+        cursor = conexion.cursor()
+        query_fecha_max = f"""(
+        select
+            max(fecha_insercion_registro)::date
+        from
+            reports.rp_ponderacionxsymbol_python_historical
+        )"""
+        cursor.execute(query_fecha_max)
+        fecha_max = cursor.fetchall()
+        return fecha_max
+    
+    fecha_maxima = func_fecha_maxima_historical(conexion)
+    fecha_maxima = fecha_maxima[0][0].strftime("%Y-%m-%d")
+    
+    cursor = conexion.cursor()
+    query_instrumentos_old = f"""
+    select 
+        codigo,
+        precio,
+        tamano_contrato,
+        coalesce(monto_usd,0) as monto_usd,
+        spread_full,
+        spread_diff,
+        spread_premium,
+        spread_vip,
+        ponderacion_full,
+        ponderacion_premium,
+        ponderacion_vip,
+        path_instrumento,
+        path_grupo,
+        grupos_id
+    from 
+        reports.rp_ponderacionxsymbol_python_historical rppu
+    where
+        fecha_insercion_registro::date = '{fecha_maxima}'
+        and instrumento in {tuple([x for x in instrumentos_faltantes]) if len([x for x in instrumentos_faltantes]) > 1 else f"('{[x for x in instrumentos_faltantes][0]}')"}
+    """
+    cursor.execute(query_instrumentos_old)
+    old_instrumentos = cursor.fetchall()
+
+    viejas_ponderaciones = dict()
+    
+    for item in old_instrumentos:
+        codigo = item[0]
+        precio = item[1]
+        tamanio_contrato = item[2]
+        monto_usd = item[3]
+        spread_full = item[4]
+        spread_diff = item[5]
+        spread_premium = item[6]
+        spread_vip = item[7]
+        ponderacion_full = item[8]
+        ponderacion_premium = item[9]
+        ponderacion_vip = item[10]
+        path_instrumento = item[11]
+        path_grupo = item[12]
+        grupos_id = item[13]
+        viejas_ponderaciones[codigo] = {
+            'precio' : round(precio,4),
+            'tamanio_contrato' : int(tamanio_contrato),
+            'monto_usd' : round(monto_usd,4),
+            'spread_full' : round(spread_full,4),
+            'spread_diff' : round(spread_diff,4),
+            'spread_premium': round(spread_premium,4),
+            'spread_vip': round(spread_vip,4),
+            'ponderacion_full': round(ponderacion_full,4),
+            'ponderacion_premium': round(ponderacion_premium,4),
+            'ponderacion_vip': round(ponderacion_vip,4),
+            'path_instrumento' : path_instrumento,
+            'path_grupo' : path_grupo,
+            'grupos_id' : grupos_id
+            }
+        
+    return viejas_ponderaciones
+
+
+def func_sel_instrumentos_old_update(conexion, instrumentos_faltantes):
+    # Obtiene los instrumentods de la base de datos de la tabla rp_ponderacionxsymbol_python_update
+    #! REVISAR
     cursor = conexion.cursor()
     query_instrumentos_old = f"""
     select 
@@ -345,6 +427,7 @@ def func_sel_instrumentos_old(conexion, instrumentos_faltantes):
             }
         
     return viejas_ponderaciones
+
 
 def func_sel_grupos_reales(conexion):
     # Obtiene los IDs de grupos, el nombre de grupo y la categoria de mt5_groups
@@ -482,8 +565,7 @@ def func_ins_path_grupo(conexion, llenado_path_grupo):
         
 
 def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
-    # inserta en reports.rp_ponderacionxsymbol_python_update
-        
+    # inserta en la tabla reports.rp_ponderacionxsymbol_python_historical
     if len(nuevas_ponderaciones) >= 1:
         new_ponderaciones_insert_historic = list()
         for codigo in nuevas_ponderaciones:
@@ -551,6 +633,7 @@ def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
         cursor.executemany(rp_ponderacionxsymbol_python,new_ponderaciones_insert_historic)
         conexion.commit()
         cursor.close()
+
 
 def func_ins_datos_ponderados(conexion, insert):
     # inserta en reports.rp_ponderacionxsymbol_python_update

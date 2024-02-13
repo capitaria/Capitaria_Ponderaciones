@@ -1,15 +1,6 @@
 from datetime import timedelta # para agregar/quitar dias
 from dateutil.relativedelta import relativedelta # para agregar/quitar mes
 
-#! def func_path_grupo_vacio(instrumentos_mt5, instrumentos_path):
-#!     sin_path_grupo = list()
-
-#!     for instrumento in instrumentos_mt5:
-#!         if instrumento[0] not in instrumentos_path:
-#!             sin_path_grupo.append(instrumento)
-            
-#!     return sin_path_grupo
-
 def func_tipo_instrumento(moneda, path):
     # Agrega el Tipo de Instrumento, tomando la moneda y el Path
     if 'ADR' in path:
@@ -220,7 +211,6 @@ def func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones):
 
 def func_grupos_y_simbolos(grupos_reales,grupos_simbolos):
     #Une los grupos reales con los grupos de cada simbolo
-    
     grupos = list()
     
     # grupo[0]:Numero Grupo - grupo[1]:Grupo - grupo[2]:Categoria - datos[1]:Path Instrumento - datos[2]:Spread Diferencia
@@ -285,6 +275,7 @@ def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupaci
                 }
     return nuevas_ponderaciones2
 
+
 def func_ponderacion(spread_full, spread_diff, spread_premium):
     #Calcula las Ponderaciones Pro y Premium (que siempre son las mismas)
     if (spread_full-spread_diff) > 0:
@@ -295,7 +286,7 @@ def func_ponderacion(spread_full, spread_diff, spread_premium):
 
 #^ OTROS
 def func_mes_fiscal(fecha_consultada):
-        # Fecha cae despues del 25, obtiene el mes fiscal exacto del proximo mes
+    # Fecha cae despues del 25, obtiene el mes fiscal exacto del proximo mes
     if fecha_consultada.day > 25:
         fecha_prox_mes_fiscal_exacta = fecha_consultada.replace(day=25) + relativedelta(months=1)
     # De lo contrario, el mes fiscal es el 25 del mes en curso
