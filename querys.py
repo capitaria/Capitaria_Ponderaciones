@@ -1,8 +1,7 @@
 
 #& SELECT
-
 def func_sel_mt5_instrumento_path(conexion):
-    # Obtiene todos los instrumentos y path
+    # Obtiene todos los "instrumentos" y "path instrumento" de la tabla mt5_symbols.
     cursor = conexion.cursor()
     query_instrumento_path = f"""
 	select 
@@ -11,51 +10,59 @@ def func_sel_mt5_instrumento_path(conexion):
         TO_CHAR(NOW(), 'YYYY-MM-DD HH24:MI:SS.MS') as fecha_insercion_registro
 	from 
 		mt5_symbols ms
-	where
-		/*ms."Path" not ilike 'historicos%'
+	/*where
+		ms."Path" not ilike 'historicos%'
 		and ms."Path" not ilike 'provisorios%'
 		and ms."Path" not ilike '%START%'
 		and ms."Path" not ilike 'alimentadores%'
 		and ms."Path" not ilike 'MarketExecution%'
-        and*/ ms."Symbol" in ('Gasol_Feb24') -- COMENTAR
+        and ms."Symbol" in ('Gasol_Feb24','#META','#CAT')*/
     """
     cursor.execute(query_instrumento_path)
     query_instrumento_path = cursor.fetchall()
 
-    instrumentos_path = list()
+    instrumentos_path = dict()
 
     for item in query_instrumento_path:
         instrumento = item[0]
         path_instrumento = item[1]
         fecha_insercion = item[2]
-        instrumentos_path.append([
-            instrumento,
-            path_instrumento,
-            fecha_insercion
-        ])
+        instrumentos_path[instrumento] = {
+            'path_instrumento' : path_instrumento,
+            'fecha_insercion' : fecha_insercion
+        }
         
     return instrumentos_path
 
+
 def func_sel_path_instrumento(conexion):
-    # Obtiene los instrumentos de la tabla rp_ponderaciones_path
+    # Obtiene todos los "instrumentos" y "path instrumento" de la tabla reports.rp_ponderaciones_path
     cursor = conexion.cursor()
     query_instrumentos = f"""
 	select 
-		rpp.instrumento
+		rpp.instrumento,
+        rpp.path_instrumento
 	from
 		reports.rp_ponderaciones_path rpp
-    --where rpp.instrumento in ('T.NINTENDO','WTI','ETF_BTCO','ETF_GBTC','GasNa_Mar24','Gasol_Mar24') -- COMENTAR
     """
     cursor.execute(query_instrumentos)
     query_instrumentos = cursor.fetchall()
-
-    instrumentos = [symbol[0] for symbol in query_instrumentos]
-        
-    return instrumentos
     
+    instrumentos_path = dict()
+    
+    for item in query_instrumentos:
+        instrumento = item[0]
+        path_instrumento = item[1]
+        instrumentos_path[instrumento] = {
+            'path_instrumento' : path_instrumento
+        }
+        
+    return instrumentos_path
+
 
 def func_sel_path_grupo_faltante(conexion):
-    # Obtiene los path grupo que son null
+    # Obtiene los "Path Grupo" que son null.
+    # IMPORTANTE: el "Path Grupo" sirve para obtener la diferencia de Spread.
     cursor = conexion.cursor()
     query_path_grupos_faltantes = f"""
     select 
@@ -74,8 +81,9 @@ def func_sel_path_grupo_faltante(conexion):
     
     return path_grupos_faltantes
 
+
 def func_sel_grupos_existentes(conexion):
-    # Obtiene los path grupo que existen
+    # Obtiene los "Path Grupo" que existen en la tabla mt5_groups_symbols
     cursor = conexion.cursor()
     query_path_grupos_existentes = f"""
     select 
@@ -92,7 +100,9 @@ def func_sel_grupos_existentes(conexion):
     
     return path_grupos_existentes
 
+
 def func_llenado_path_grupo(paths_grupos_faltantes, paths_grupos):
+    # Llena el "Path Grupo" dependiendo del "Path Instrumento"
     path_grupos_new = list()
 
     for instrumento, path_instrumento in paths_grupos_faltantes:
@@ -117,7 +127,8 @@ def func_llenado_path_grupo(paths_grupos_faltantes, paths_grupos):
                         path_grupos_new.append([instrumento,path_grupo])
     
     return path_grupos_new
-    
+
+
 def func_sel_instrumentos_faltantes(conexion):
     # Obtiene los instrumentos y precio de pr_precios
     cursor = conexion.cursor()
@@ -130,7 +141,7 @@ def func_sel_instrumentos_faltantes(conexion):
     from
         reports.rp_precios pr
     where
-        pr.fecha_insercion::date = now()::date
+        pr.fecha_insercion::date = '2024-02-02' -- now()::date
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
@@ -336,7 +347,7 @@ def func_sel_instrumentos_old(conexion, instrumentos_faltantes):
     return viejas_ponderaciones
 
 def func_sel_grupos_reales(conexion):
-    # Obtiene los IDs de grupos, el nombre de grupo y la categoria
+    # Obtiene los IDs de grupos, el nombre de grupo y la categoria de mt5_groups
     cursor = conexion.cursor()
     query_grupos_reales = f"""
     select 
@@ -378,7 +389,7 @@ def func_sel_grupos_reales(conexion):
 
 
 def func_sel_grupos_simbolos(conexion):
-    # Obtiene los IDs de grupos, el nombre de grupo y la categoria
+    # Obtiene los IDs de grupos, el nombre de grupo y la categoria de mt5_groups_symbols
     cursor = conexion.cursor()
     query_grupos_simbolos = f"""
     select 
@@ -420,12 +431,11 @@ def func_sel_grupos_simbolos(conexion):
     return grupos_simbolos
 #& FIN SELECT
 
-#^ INSERT PATH FALTANTE
-def func_ins_path(conexion, sin_path_grupo):
-    # inserta en reports.rp_ponderacionxsymbol_python_update
-
-    if len(sin_path_grupo) >= 1:
-        sin_path_grupo = [tuple(datos) for datos in sin_path_grupo]
+#^ INSERT
+def func_ins_instrumento_path(conexion, insert):
+    # inserta en reports.rp_ponderaciones_path
+    if len(insert) >= 1:
+        insert = [tuple(datos) for datos in insert]
         
         cursor = conexion.cursor()
         
@@ -444,12 +454,33 @@ def func_ins_path(conexion, sin_path_grupo):
         )
         """)
 
-        cursor.executemany(rp_ponderaciones_path,sin_path_grupo)
+        cursor.executemany(rp_ponderaciones_path,insert)
         conexion.commit()
         cursor.close()
-#^ FIN INSERT PATH FALTANTE
+        
+        
+def func_ins_path_grupo(conexion, llenado_path_grupo):
+    # actualiza reports.rp_ponderacionxsymbol_python_update
+    
+    if len(llenado_path_grupo) >= 1:
+        for clave, valor in llenado_path_grupo:
+            query_llenado_path_grupo = (
+            f"""
+            update
+                reports.rp_ponderaciones_path
+            set
+                path_grupo = %s
+            where
+                instrumento = %s
+            """)
+            
+            cursor = conexion.cursor()
+            cursor.execute(query_llenado_path_grupo, (valor, clave))
 
-#^ INSERT HISTORICO
+        conexion.commit()
+        conexion.close()
+        
+
 def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
     # inserta en reports.rp_ponderacionxsymbol_python_update
         
@@ -520,9 +551,7 @@ def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
         cursor.executemany(rp_ponderacionxsymbol_python,new_ponderaciones_insert_historic)
         conexion.commit()
         cursor.close()
-#^ FIN INSERT HISTORICO
 
-#^ INSERT
 def func_ins_datos_ponderados(conexion, insert):
     # inserta en reports.rp_ponderacionxsymbol_python_update
     if len(insert) >= 1:
@@ -593,7 +622,28 @@ def func_ins_datos_ponderados(conexion, insert):
         cursor.close()
 #^ FIN INSERT
 
-#^ UPDATE
+#~ UPDATE
+def func_upd_path_instrumento(conexion, update):
+    # Actualiza el "path instrumento" en reports.rp_ponderaciones_path
+    if len(update) >= 1:
+        for clave, valor in update:
+            query_update_path = (
+            f"""
+            update
+                reports.rp_ponderaciones_path
+            set
+                path_instrumento = %s
+            where
+                instrumento = %s
+            """)
+            
+            cursor = conexion.cursor()
+            cursor.execute(query_update_path, (valor, clave))
+
+        conexion.commit()
+        conexion.close()
+
+
 def func_upd_datos_ponderados(conexion, update):
     # actualiza en reports.rp_ponderacionxsymbol_python_update
     
@@ -646,29 +696,4 @@ def func_upd_datos_ponderados(conexion, update):
 
         conexion.commit()
         conexion.close()
-
-#^ FIN UPDATE
-
-#^ UPDATE PATH GRUPO FALTANTE
-def func_upd_path_grupo(conexion, llenado_path_grupo):
-    # actualiza en reports.rp_ponderacionxsymbol_python_update
-    
-    if len(llenado_path_grupo) >= 1:
-        #update_path_grupo = list()
-        for clave, valor in llenado_path_grupo:
-            query_llenado_path_grupo = (
-            f"""
-            update
-                reports.rp_ponderaciones_path
-            set
-                path_grupo = %s
-            where
-                instrumento = %s
-            """)
-            
-            cursor = conexion.cursor()
-            cursor.execute(query_llenado_path_grupo, (valor, clave))
-
-        conexion.commit()
-        conexion.close()
-#^ FIN UPDATE PATH GRUPO FALTANTE
+#~ FIN UPDATE

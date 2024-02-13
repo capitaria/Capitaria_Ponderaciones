@@ -1,14 +1,14 @@
 from datetime import timedelta # para agregar/quitar dias
 from dateutil.relativedelta import relativedelta # para agregar/quitar mes
 
-def func_path_grupo_vacio(instrumentos_mt5, instrumentos_path):
-    sin_path_grupo = list()
+#! def func_path_grupo_vacio(instrumentos_mt5, instrumentos_path):
+#!     sin_path_grupo = list()
 
-    for instrumento in instrumentos_mt5:
-        if instrumento[0] not in instrumentos_path:
-            sin_path_grupo.append(instrumento)
+#!     for instrumento in instrumentos_mt5:
+#!         if instrumento[0] not in instrumentos_path:
+#!             sin_path_grupo.append(instrumento)
             
-    return sin_path_grupo
+#!     return sin_path_grupo
 
 def func_tipo_instrumento(moneda, path):
     # Agrega el Tipo de Instrumento, tomando la moneda y el Path
@@ -118,8 +118,8 @@ def func_monto_usd(moneda, monto_a_usd):
 
 
 def func_ponderaciones_campos_no_calculados(ponderacion_base):
-    # Se agrega los campos no calculados (path, tatamano_contrato, moneda_calculo, spread_go (pro) y poderacion_go)
-
+    # Se agrega los campos no calculados
+    # "Path Instrumento", "Path Grupo", "Tatamano Contrato", "Moneda Calculo", "Spread Full"
     nuevas_ponderaciones = dict()
 
     for instrumento in ponderacion_base:
@@ -141,7 +141,8 @@ def func_ponderaciones_campos_no_calculados(ponderacion_base):
 
 
 def func_ponderaciones_campos_calculados(nuevas_ponderaciones,instrumentos_faltantes,calculo_a_usd):
-    #* Se agrega los campos calculados (tipo_instrumento, tipo, precio, monto_usd)
+    # Se agregan los campos calculados
+    # "tipoinstrumento", "tipo", "monto_usd", "precio"
     for instrumento in nuevas_ponderaciones:
         nuevas_ponderaciones[instrumento]['tipo_instrumento'] = (
             func_tipo_instrumento(
@@ -169,6 +170,27 @@ def func_ponderaciones_campos_calculados(nuevas_ponderaciones,instrumentos_falta
                 nuevas_ponderaciones[instrumento]['fecha_insercion_registro'] = val
 
     return nuevas_ponderaciones
+
+
+def func_actualiza_path_instrumentos(instrumentos_mt5,instrumentos_path):
+    # Verifica si el instrumento existe en la tabla reports.rp_ponderaciones_path
+    # en caso de existir actualiza el "path instrumento" solo si fue cambiado
+    # si el instrumento no existe lo crea en la misma tabla.
+    insert = list()
+    update = list()
+    no_update = list()
+            
+    for instrumento in instrumentos_mt5:
+        if instrumento in instrumentos_path:
+            if instrumentos_mt5[instrumento]['path_instrumento'] != instrumentos_path[instrumento]['path_instrumento']:
+                update.append([instrumento,instrumentos_mt5[instrumento]['path_instrumento']])
+            else:
+                no_update.append([instrumento,instrumentos_mt5[instrumento]['path_instrumento']])
+        else:
+            insert.append([instrumento,instrumentos_mt5[instrumento]['path_instrumento'],instrumentos_mt5[instrumento]['fecha_insercion']])
+            
+    return insert, update, no_update
+
 
 def func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones):
     # va a buscar los nuevos instrumentos para ver si estan en la tabla, en caso de que esten va a recorrer los campos y ve si alguno cambio, para entonces actualizar, si no, no hay cambios, no actualizara el instrumento
@@ -217,31 +239,25 @@ def func_grupos_y_simbolos(grupos_reales,grupos_simbolos):
 
 def func_agrupacion_categoria(grupos):
     # Agrupa por Categoria
-    
-    grupos_dict = {} # Crear un diccionario para almacenar los grupos
+    grupos_dict = {}
 
-    # Iterar sobre cada elemento de la lista
-    # dato[2]:Categoria - dato[3]:Grupo - dato[4]:Diferencia Spread
     for dato in grupos:
-        agrupar = (dato[2], dato[3], dato[4])  # Definir la clave para la agrupación 
+        agrupar = (dato[2], dato[3], dato[4]) # key -> dato[2]:Categoria - dato[3]:Grupo - dato[4]:Diferencia Spread
         if agrupar not in grupos_dict:
             grupos_dict[agrupar] = [dato[2], dato[3], dato[4], []]
         grupos_dict[agrupar][-1].append(dato[0])
 
-    # Obtener la lista final de listas
     agrupacion = list(grupos_dict.values())
     
     return agrupacion
 
 
-
 def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupacion):
+    # Agrega el Spread en base a las ponderaciones PREMIUM y VIP
     nuevas_ponderaciones2 = dict()
 
     for instrumento in nuevas_ponderaciones:
-        #path_instrumento = nuevas_ponderaciones[instrumento]['path_instrumento']
         path_grupo = nuevas_ponderaciones[instrumento]['path_grupo']
-        #print(instrumento,path_instrumento,path_grupo)
         for lista in agrupacion:
             if path_grupo == lista[1]:
                 key = instrumento+lista[0]+str(lista[2])
@@ -263,7 +279,6 @@ def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupaci
                     'ponderacion_full' : float(1),
                     'ponderacion_premium' : func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]),
                     'ponderacion_vip' : func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]),
-                    #'grupos_id' : ', '.join(map(str, lista[3])),
                     'grupos_id' : ', '.join(map(str, sorted(lista[3]))),
                     'fecha_insercion_precio' : nuevas_ponderaciones[instrumento]['fecha_insercion_precio'],
                     'fecha_insercion_registro' : nuevas_ponderaciones[instrumento]['fecha_insercion_registro']
@@ -271,13 +286,11 @@ def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupaci
     return nuevas_ponderaciones2
 
 def func_ponderacion(spread_full, spread_diff, spread_premium):
-    #! Borrar
     #Calcula las Ponderaciones Pro y Premium (que siempre son las mismas)
     if (spread_full-spread_diff) > 0:
         ponderacion = round(spread_full/spread_premium,3)
     else:
-        ponderacion = 1
-    
+        ponderacion = 1   
     return ponderacion
 
 #^ OTROS
