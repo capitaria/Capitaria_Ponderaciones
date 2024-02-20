@@ -13,16 +13,17 @@ try:
         print("Conexión exitosa a la base de datos PostgreSQL")
         
         #^ Insercion de "Instrumento" y Actualizacion de "Path Instrumento"
-        instrumentos_mt5 = func_sel_mt5_instrumento_path(conexion) #! modificar
-        instrumentos_path = func_sel_path_instrumento(conexion) #! modificar
+        instrumentos_mt5 = func_sel_mt5_instrumento_path(conexion)
+        instrumentos_path = func_sel_path_instrumento(conexion)
         insert_path, update_path, no_update_path = func_actualiza_path_instrumentos(instrumentos_mt5,instrumentos_path)
-        #// print(f"\n\n MT5: {instrumentos_mt5}\n\nBDD: {instrumentos_path}\n\n")
-        #//print(f"\n\nNuevo ({len(insert_path)}): {insert_path}\n\nActualizado ({len(update_path)}): {update_path}\n\nNo Actualizado ({len(no_update_path)}): {no_update_path}")
+        print(f"\nInsert ({len(insert_path)}): {[x[0] for x in insert_path]}")
+        print(f"\nUpdate ({len(update_path)}): {[x[0] for x in update_path]}")
+        print(f"\nNo Update ({len(no_update_path)}): {[x[0] for x in no_update_path]}\n")
         func_ins_instrumento_path(conexion, insert_path)
         func_upd_path_instrumento(conexion, update_path)
         
         #^ Agrega y/o Actualiza el Path Grupo de forma automatica
-        paths_grupos_faltantes = func_sel_path_grupo_faltante(conexion,update_path)
+        paths_grupos_faltantes = func_sel_path_grupo_faltante(conexion,update_path) #! Importante: Si el update viene vacio, se cae
         paths_grupos = func_sel_grupos_existentes(conexion)
         llenado_path_grupo = func_llenado_path_grupo(paths_grupos_faltantes, paths_grupos)
         func_ins_upd_path_grupo(conexion,llenado_path_grupo)
@@ -52,7 +53,7 @@ try:
         func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones)
         fecha_prox_mes_fiscal_exacta, fecha_prox_mes_fiscal_correcta = func_mes_fiscal(fecha_consultada)
         if fecha_consultada == fecha_prox_mes_fiscal_correcta: #* Se actualiza los cierres de mes
-            #func_sel_instrumentos_old_update(conexion,instrumentos_faltantes) #! REVISAR
+            #func_sel_instrumentos_old_update(conexion,instrumentos_faltantes) #! REVISAR EL 23
             func_ins_datos_ponderados(conexion, insert_instrumento) 
             func_upd_datos_ponderados(conexion,update_instrumento)
                         

@@ -24,3 +24,9 @@ for instrumento in BDD:
         print('UPDATE: ', instrumento)
     
     print("\n")
+    
+    
+    
+    
+    
+

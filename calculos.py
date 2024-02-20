@@ -175,6 +175,8 @@ def func_actualiza_path_instrumentos(instrumentos_mt5,instrumentos_path):
         if instrumento in instrumentos_path: # Si el "instrumento de MT5" esta en los "instrumentos de BDD"
             if instrumentos_mt5[instrumento]['path_instrumento'] != instrumentos_path[instrumento]['path_instrumento']: # Si el "Path Instrumento" de MT5 es distinto al "Path Instrumento" de la BDD
                 update.append([instrumento,instrumentos_mt5[instrumento]['path_instrumento']])
+            elif instrumentos_path[instrumento]['path_instrumento'][0:instrumentos_path[instrumento]['path_instrumento'].find("\\")] == 'Provisorios' and instrumentos_path[instrumento]['path_grupo'] == None:
+                update.append([instrumento,instrumentos_path[instrumento]['path_instrumento']])
             elif instrumentos_path[instrumento]['path_instrumento'][0:instrumentos_path[instrumento]['path_instrumento'].find("\\")] == 'Historicos' and instrumentos_path[instrumento]['path_grupo'] == '*': # Si el grupo instrumento "inicia en Historico" y el grupo path tiene "*", no actualiza 
                 no_update.append([instrumento,instrumentos_path[instrumento]['path_instrumento']])
             elif instrumentos_path[instrumento]['path_instrumento'][0:instrumentos_path[instrumento]['path_instrumento'].find("\\")] != instrumentos_path[instrumento]['path_grupo'][0:instrumentos_path[instrumento]['path_grupo'].find("\\")]: # Si el "inicio del Path Instrumento" es distinto al "Inicio de Grupo Path"
