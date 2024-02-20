@@ -10,13 +10,17 @@ def func_sel_mt5_instrumento_path(conexion):
         TO_CHAR(NOW(), 'YYYY-MM-DD HH24:MI:SS.MS') as fecha_insercion_registro
 	from 
 		mt5_symbols ms
-	/*where
+	/*
+    where
 		ms."Path" not ilike 'historicos%'
 		and ms."Path" not ilike 'provisorios%'
 		and ms."Path" not ilike '%START%'
 		and ms."Path" not ilike 'alimentadores%'
 		and ms."Path" not ilike 'MarketExecution%'
-        and ms."Symbol" in ('Gasol_Feb24','#META','#CAT')*/
+        where ms."Symbol" in ('IBEX_Feb24','CAC_Feb24','#NVTA','#SMCI','IBEX_Mar24','CAC_Mar24','ETF_IBIT','ETF_IEF','WTI_Abr24','CafeC_May24','WTI_Abr24','ETF_EEM','WTI_Jul23')
+    */
+    order by
+        ms."Symbol" asc
     """
     cursor.execute(query_instrumento_path)
     query_instrumento_path = cursor.fetchall()
@@ -41,9 +45,15 @@ def func_sel_path_instrumento(conexion):
     query_instrumentos = f"""
 	select 
 		rpp.instrumento,
-        rpp.path_instrumento
+        rpp.path_instrumento,
+        rpp.path_grupo
 	from
 		reports.rp_ponderaciones_path rpp
+    /*
+    where
+        rpp.instrumento in ('IBEX_Feb24','CAC_Feb24','#NVTA','#SMCI','IBEX_Mar24','CAC_Mar24','ETF_IBIT','ETF_IEF','WTI_Abr24','CafeC_May24','WTI_Abr24','ETF_EEM','WTI_Jul23')
+    */
+    order by rpp.instrumento asc
     """
     cursor.execute(query_instrumentos)
     query_instrumentos = cursor.fetchall()
@@ -53,14 +63,16 @@ def func_sel_path_instrumento(conexion):
     for item in query_instrumentos:
         instrumento = item[0]
         path_instrumento = item[1]
+        path_grupo = item[2]
         instrumentos_path[instrumento] = {
-            'path_instrumento' : path_instrumento
+            'path_instrumento' : path_instrumento,
+            'path_grupo' : path_grupo
         }
         
     return instrumentos_path
 
 
-def func_sel_path_grupo_faltante(conexion):
+def func_sel_path_grupo_faltante(conexion,update_path):
     # Obtiene los "Path Grupo" que son null.
     # IMPORTANTE: el "Path Grupo" sirve para obtener la diferencia de Spread.
     cursor = conexion.cursor()
@@ -73,6 +85,7 @@ def func_sel_path_grupo_faltante(conexion):
     where
         rpp.path_grupo is null
         or rpp.path_grupo = ''
+        -- or rpp.instrumento in {tuple([instrumento[0] for instrumento in update_path])}
     """
     cursor.execute(query_path_grupos_faltantes)
     query_path_grupos_faltantes = cursor.fetchall()
@@ -141,7 +154,7 @@ def func_sel_instrumentos_faltantes(conexion):
     from
         reports.rp_precios pr
     where
-        pr.fecha_insercion::date = '2024-02-12'
+        pr.fecha_insercion::date = now()::date
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
@@ -542,7 +555,7 @@ def func_ins_instrumento_path(conexion, insert):
         cursor.close()
         
         
-def func_ins_path_grupo(conexion, llenado_path_grupo):
+def func_ins_upd_path_grupo(conexion, llenado_path_grupo):
     # actualiza reports.rp_ponderacionxsymbol_python_update
     
     if len(llenado_path_grupo) >= 1:
