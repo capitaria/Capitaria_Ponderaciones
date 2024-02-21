@@ -83,7 +83,9 @@ def func_sel_path_grupo_faltante(conexion,update_path):
     where
         rpp.path_grupo is null
         or rpp.path_grupo = ''
-        or rpp.instrumento in {tuple([x[0] for x in update_path]) if len(update_path) > 1 else f"('{[x[0] for x in update_path][0]}')"}
+        or rpp.instrumento in 
+        {tuple([x[0] for x in update_path]) if len(update_path) > 1 else
+        f"('{[x[0] for x in update_path][0]}')" if len(update_path) == 1 else "('')"}
     """
     
     cursor.execute(query_path_grupos_faltantes)
@@ -143,7 +145,7 @@ def func_llenado_path_grupo(paths_grupos_faltantes, paths_grupos):
 def func_sel_instrumentos_faltantes(conexion):
     # Obtiene los instrumentos y precio de pr_precios
     cursor = conexion.cursor()
-    query_instrumentos_faltantes = """
+    query_instrumentos_faltantes = f"""
     select
         pr.symbol as instrumento,
         round(((pr.bidlast + pr.asklast)/2)::numeric,4) as precio,
@@ -152,10 +154,11 @@ def func_sel_instrumentos_faltantes(conexion):
     from
         reports.rp_precios pr
     where
-        pr.fecha_insercion::date = '2024-02-19'
+        pr.fecha_insercion::date = '2024-02-20'
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
+        and pr.symbol = '#NVDA'
         /*
         and pr.symbol in (
             select 
@@ -442,8 +445,9 @@ def func_sel_instrumentos_old_update(conexion, instrumentos_faltantes):
 
 def func_sel_grupos_reales(conexion):
     # Obtiene los IDs de grupos, el nombre de grupo y la categoria de mt5_groups
+    # Ademas solo obtiene los grupos donde existen Subcuentas asociadas
     cursor = conexion.cursor()
-    query_grupos_reales = """
+    query_grupos_reales = f"""
     select 
         mg."Group_ID" as grupo_id,
         mg."Group" as grupo,
@@ -452,16 +456,24 @@ def func_sel_grupos_reales(conexion):
             when mg."Group" ilike '%vip%' then 'VIP'
             when mg."Group" ilike '%pre%' then 'PRE'
             else mg."Group"
-        end as cat_grupo
+        end as cat_grupo,
+        count(mu."Login") as logins
     from
-        mt5_groups mg
+        mt5_groups mg left join mt5_users mu
+        on mg."Group" = mu."Group"
     where
         mg."Group" ilike 'real%'
         and mg."Group" not ilike '%lite%'
         and mg."Group" not ilike '%sta%'
         and mg."Group" not ilike '%ins%mesa%'
-        -- and mg."Group_ID" not in (5,10,14) -- GRUPO NO ENCONTRADOS
-        -- and mg."Group_ID" in (456, 601, 147,148,554,600,602)
+        -- and mg."Group" not like '%99' -- COMENTAR
+        and mg."Group_ID" = 583 -- COMENTAR
+    group by
+        mg."Group_ID",
+        mg."Group",
+        cat_grupo
+    having
+        count(mu."Login") != 0
     """
 
     cursor.execute(query_grupos_reales)
@@ -485,27 +497,52 @@ def func_sel_grupos_reales(conexion):
 def func_sel_grupos_simbolos(conexion):
     # Obtiene los IDs de grupos, el nombre de grupo y la categoria de mt5_groups_symbols
     cursor = conexion.cursor()
-    query_grupos_simbolos = """
+    query_grupos_simbolos = f"""
     select 
         mgs."Group_ID" as grupo_id_asoc,
         mgs."Path" as path,
-        mgs."SpreadDiff" as spread_premium_diff
+        coalesce(mgs."SpreadDiff",0) as spread_premium_diff
     from
         mt5_groups_symbols mgs
-	where mgs."Group_ID" in (
-		select 
-		    mg."Group_ID" as grupo_id
-		from
-		    mt5_groups mg
-		where
-		    mg."Group" ilike 'real%'
-		    and mg."Group" not ilike '%lite%'
-		    and mg."Group" not ilike '%sta%'
-		    and mg."Group" not ilike '%ins%mesa%'
-		    -- and mg."Group_ID" not in (5,10,14)
-		    -- and mg."Group_ID" in (456, 601, 147,148,554)
-	)
+    where mgs."Group_ID" in 
+        (
+        select 
+            mg."Group_ID" as grupo_id
+        from
+            mt5_groups mg left join mt5_users mu
+            on mg."Group" = mu."Group"
+        where
+            mg."Group" ilike 'real%'
+            and mg."Group" not ilike '%lite%'
+            and mg."Group" not ilike '%sta%'
+            and mg."Group" not ilike '%ins%mesa%'
+            -- and mg."Group" not like '%99' -- COMENTAR
+            and mg."Group_ID" = 583 -- COMENTAR
+        group by
+            mg."Group_ID"
+        having
+            count(mu."Login") != 0
+        )
     """
+    # select 
+    #     mgs."Group_ID" as grupo_id_asoc,
+    #     mgs."Path" as path,
+    #     mgs."SpreadDiff" as spread_premium_diff
+    # from
+    #     mt5_groups_symbols mgs
+	# where mgs."Group_ID" in (
+	# 	select 
+	# 	    mg."Group_ID" as grupo_id
+	# 	from
+	# 	    mt5_groups mg
+	# 	where
+	# 	    mg."Group" ilike 'real%'
+	# 	    and mg."Group" not ilike '%lite%'
+	# 	    and mg."Group" not ilike '%sta%'
+	# 	    and mg."Group" not ilike '%ins%mesa%'
+	# 	    -- and mg."Group_ID" not in (5,10,14)
+	# 	    -- and mg."Group_ID" in (456, 601, 147,148,554)
+	# )
 
     cursor.execute(query_grupos_simbolos)
     query_grupos_simbolos = cursor.fetchall()
@@ -571,7 +608,7 @@ def func_ins_upd_path_grupo(conexion, llenado_path_grupo):
             cursor.execute(query_llenado_path_grupo, (valor, clave))
 
         conexion.commit()
-        conexion.close()
+        #conexion.close()
         
 
 def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
