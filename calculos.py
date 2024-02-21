@@ -255,6 +255,7 @@ def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupaci
     for instrumento in nuevas_ponderaciones:
         path_grupo = nuevas_ponderaciones[instrumento]['path_grupo']
         for lista in agrupacion:
+            print(path_grupo,lista[1],'\n')
             if path_grupo == lista[1]:
                 key = instrumento+lista[0]+str(lista[2])
                 nuevas_ponderaciones2[key] = {
@@ -279,6 +280,7 @@ def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupaci
                     'fecha_insercion_precio' : nuevas_ponderaciones[instrumento]['fecha_insercion_precio'],
                     'fecha_insercion_registro' : nuevas_ponderaciones[instrumento]['fecha_insercion_registro']
                 }
+            
     return nuevas_ponderaciones2
 
 

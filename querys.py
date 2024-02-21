@@ -158,7 +158,7 @@ def func_sel_instrumentos_faltantes(conexion):
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
-        and pr.symbol = '#NVDA'
+        and pr.symbol in ('#NVDA','USDCLP','USDCOP')
         /*
         and pr.symbol in (
             select 

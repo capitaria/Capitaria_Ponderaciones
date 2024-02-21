@@ -42,7 +42,9 @@ try:
         agrupacion = func_agrupacion_categoria(grupos)
         
         #^ Junta las Nuevas Ponderaciones con la Agrupacion dejando un Codigo unico
+        print('\nnuevas ponderaciones: ',nuevas_ponderaciones,'\n\nagrupacion: ',agrupacion,'\n')
         nuevas_ponderaciones = func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupacion)
+        print(nuevas_ponderaciones)
         breakpoint()
         
         #^ Verifica los instrumentos que ya existen en la BDD
@@ -50,13 +52,13 @@ try:
         insert_instrumento, update_instrumento, no_update_instrumento = func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones)
         #// print(f"\n\nNuevo ({len(insert_instrumento)}): {[symbol for symbol in insert_instrumento]}\n\nActualizado ({len(update_instrumento)}): {[symbol for symbol in update_instrumento]}\n\nNo Actualizado ({len(no_update_instrumento)}): {[symbol for symbol in no_update_instrumento]}")
         
-        # #^ Inserta (tabla historica y update) y Actualiza (update) en la Base de Datos
-        # func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones)
-        # fecha_prox_mes_fiscal_exacta, fecha_prox_mes_fiscal_correcta = func_mes_fiscal(fecha_consultada)
-        # if fecha_consultada == fecha_prox_mes_fiscal_correcta: #* Se actualiza los cierres de mes
-        #     #func_sel_instrumentos_old_update(conexion,instrumentos_faltantes) #! REVISAR EL 23
-        #     func_ins_datos_ponderados(conexion, insert_instrumento) 
-        #     func_upd_datos_ponderados(conexion,update_instrumento)
+        #^ Inserta (tabla historica y update) y Actualiza (update) en la Base de Datos
+        func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones)
+        fecha_prox_mes_fiscal_exacta, fecha_prox_mes_fiscal_correcta = func_mes_fiscal(fecha_consultada)
+        if fecha_consultada == fecha_prox_mes_fiscal_correcta: #* Se actualiza los cierres de mes
+            #func_sel_instrumentos_old_update(conexion,instrumentos_faltantes) #! REVISAR EL 23
+            func_ins_datos_ponderados(conexion, insert_instrumento) 
+            func_upd_datos_ponderados(conexion,update_instrumento)
                         
         # #^ INFO
         # fin = crono()
