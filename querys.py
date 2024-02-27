@@ -154,11 +154,11 @@ def func_sel_instrumentos_faltantes(conexion):
     from
         reports.rp_precios pr
     where
-        pr.fecha_insercion::date = '2024-02-20'
+        pr.fecha_insercion::date = '2024-02-21'
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
-        and pr.symbol in ('#NVDA','USDCLP','USDCOP')
+        and pr.symbol in ('#NVDA')
         /*
         and pr.symbol in (
             select 
@@ -260,7 +260,9 @@ def func_sel_monto_moneda_usd(conexion):
         usdjpy,
         gbpusd,
         usdchf,
-        usdmxn
+        usdmxn,
+        fecha_inicio,
+	    fecha_fin
     from
         processes.pr_fiscal_period 
     order by
@@ -467,7 +469,7 @@ def func_sel_grupos_reales(conexion):
         and mg."Group" not ilike '%sta%'
         and mg."Group" not ilike '%ins%mesa%'
         -- and mg."Group" not like '%99' -- COMENTAR
-        and mg."Group_ID" = 583 -- COMENTAR
+        -- and mg."Group_ID" = 583 -- COMENTAR
     group by
         mg."Group_ID",
         mg."Group",
@@ -517,7 +519,7 @@ def func_sel_grupos_simbolos(conexion):
             and mg."Group" not ilike '%sta%'
             and mg."Group" not ilike '%ins%mesa%'
             -- and mg."Group" not like '%99' -- COMENTAR
-            and mg."Group_ID" = 583 -- COMENTAR
+            -- and mg."Group_ID" = 583 -- COMENTAR
         group by
             mg."Group_ID"
         having

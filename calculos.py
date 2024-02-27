@@ -195,6 +195,7 @@ def func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones):
     no_update = dict()
     insert = dict()
 
+    
     for codigo in nuevas_ponderaciones:
         if codigo in viejas_ponderaciones:
             if (viejas_ponderaciones[codigo]['precio'] != nuevas_ponderaciones[codigo]['precio']
@@ -255,8 +256,7 @@ def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupaci
     for instrumento in nuevas_ponderaciones:
         path_grupo = nuevas_ponderaciones[instrumento]['path_grupo']
         for lista in agrupacion:
-            print(path_grupo,lista[1],'\n')
-            if path_grupo == lista[1]:
+            if path_grupo == lista[1] or path_grupo[:path_grupo.find(" ")] in lista[1] or path_grupo[:path_grupo.find("\\")] in lista[1]:
                 key = instrumento+lista[0]+str(lista[2])
                 nuevas_ponderaciones2[key] = {
                     'instrumento' : instrumento,
@@ -274,8 +274,8 @@ def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupaci
                     'spread_premium' : nuevas_ponderaciones[instrumento]['spread_full'] + lista[2],
                     'spread_vip' : nuevas_ponderaciones[instrumento]['spread_full'] + lista[2],
                     'ponderacion_full' : float(1),
-                    'ponderacion_premium' : func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]),
-                    'ponderacion_vip' : func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]),
+                    'ponderacion_premium' : 1, #func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]),
+                    'ponderacion_vip' : 1, #func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]),
                     'grupos_id' : ', '.join(map(str, sorted(lista[3]))),
                     'fecha_insercion_precio' : nuevas_ponderaciones[instrumento]['fecha_insercion_precio'],
                     'fecha_insercion_registro' : nuevas_ponderaciones[instrumento]['fecha_insercion_registro']
