@@ -154,7 +154,7 @@ def func_sel_instrumentos_faltantes(conexion):
     from
         reports.rp_precios pr
     where
-        pr.fecha_insercion::date = '2024-02-21'
+        pr.fecha_insercion::date = '2024-02-22'
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
@@ -213,6 +213,7 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
         and ms."Path" not ilike '%Alimentadores%'
         and ms."Path" not ilike '%Provisorios%'
         and ms."Path" not ilike '%MarketExecution%'
+        and ms."Symbol" = '#NVDA'
 """
     
     cursor.execute(query_mt5_symbols) # Ejecuta la query
@@ -265,6 +266,7 @@ def func_sel_monto_moneda_usd(conexion):
 	    fecha_fin
     from
         processes.pr_fiscal_period 
+    where id = 180 -- ELIMINAR
     order by
         fecha_inicio desc
         fetch first 1 row only
@@ -469,7 +471,7 @@ def func_sel_grupos_reales(conexion):
         and mg."Group" not ilike '%sta%'
         and mg."Group" not ilike '%ins%mesa%'
         -- and mg."Group" not like '%99' -- COMENTAR
-        -- and mg."Group_ID" = 583 -- COMENTAR
+        and mg."Group_ID" in (535,148,166) -- COMENTAR
     group by
         mg."Group_ID",
         mg."Group",
@@ -519,12 +521,13 @@ def func_sel_grupos_simbolos(conexion):
             and mg."Group" not ilike '%sta%'
             and mg."Group" not ilike '%ins%mesa%'
             -- and mg."Group" not like '%99' -- COMENTAR
-            -- and mg."Group_ID" = 583 -- COMENTAR
+            and mg."Group_ID" in (111,148,166) -- COMENTAR
         group by
             mg."Group_ID"
         having
-            count(mu."Login") != 0
+            count(mu."Login") != 0   
         )
+    and mgs."Path" = 'CFD Acciones\EEUU\*' -- COMENTAR
     """
     # select 
     #     mgs."Group_ID" as grupo_id_asoc,

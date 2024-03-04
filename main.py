@@ -29,15 +29,17 @@ try:
         # func_ins_upd_path_grupo(conexion,llenado_path_grupo) #! INSERT
 
         #^ Crea los instrumentos faltantes
-        instrumentos_faltantes = func_sel_instrumentos_faltantes(conexion) #* SELECT - FECHA
-        monto_moneda_a_usd = func_sel_monto_moneda_usd(conexion) #* SELECT
-        ponderacion_base = func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes) #* SELECT
+        instrumentos_faltantes = func_sel_instrumentos_faltantes(conexion) #* SELECT - FECHA (Mod)
+        monto_moneda_a_usd = func_sel_monto_moneda_usd(conexion) #* SELECT (Mod)
+        ponderacion_base = func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes) #* SELECT (Mod)
         nuevas_ponderaciones = func_ponderaciones_campos_no_calculados(ponderacion_base)
         nuevas_ponderaciones = func_ponderaciones_campos_calculados(nuevas_ponderaciones,instrumentos_faltantes,monto_moneda_a_usd)
         
         #^ Crea las agrupaciones en base a la union de los grupos reales y los grupos de simbolos
-        grupos_reales = func_sel_grupos_reales(conexion) #* SELECT
-        grupos_simbolos = func_sel_grupos_simbolos(conexion) #* SELECT
+        grupos_reales = func_sel_grupos_reales(conexion) #* SELECT (Mod)
+        grupos_simbolos = func_sel_grupos_simbolos(conexion) #* SELECT (Mod)
+        print(grupos_simbolos)
+        breakpoint()
         grupos = func_grupos_y_simbolos(grupos_reales,grupos_simbolos)
         agrupacion = func_agrupacion_categoria(grupos)
         
