@@ -1,53 +1,28 @@
-nuevas_ponderaciones = {'USDCLP': {'path_instrumento': 'Forex\\CLP\\USDCLP', 'path_grupo': 'Forex\\CLP\\USDCLP', 'moneda_calculo': 'USD', 'tamanio_contrato': 100000, 'spread_full': 0, 'tipo_instrumento': 'FOREX', 'tipo': 'FOREX', 'monto_usd': 1.0, 'precio': 962.4, 'fecha_insercion_precio': '2024-02-20 18:05:03.980', 'fecha_insercion_registro': '2024-02-21 17:20:51.394'},
-                        '#NVDA': {'path_instrumento': 'CFD Acciones\\EEUU\\#NVDA', 'path_grupo': 'CFD Acciones\\EEUU\\*', 'moneda_calculo': 'USD', 'tamanio_contrato': 50, 'spread_full': 55, 'tipo_instrumento': 'ACCIONES USA', 'tipo': 'ACCIONES', 'monto_usd': 1.0, 'precio': 694.605, 'fecha_insercion_precio': '2024-02-20 18:05:03.980', 'fecha_insercion_registro': '2024-02-21 17:20:51.394'},
-                        'USDCOP': {'path_instrumento': 'Forex\\Minors\\USDCOP', 'path_grupo': 'Forex\\Minors\\USDCOP', 'moneda_calculo': 'USD', 'tamanio_contrato': 100000, 'spread_full': 0, 'tipo_instrumento': 'FOREX', 'tipo': 'FOREX', 'monto_usd': 1.0, 'precio': 3939.005, 'fecha_insercion_precio': '2024-02-20 18:05:03.980', 'fecha_insercion_registro': '2024-02-21 17:20:51.394'}}
-agrupacion = [['FUL', 'Forex\\Minors\\USDCOP', 100, [583]], ['FUL', 'Forex*', 0, [583]], ['FUL', 'CFD*', 0, [583]]]
+instrumentos_mt5 = {'#ADBE': {'path_instrumento': 'CFD Acciones\\EEUU\\#ADBE', 'fecha_insercion': '2024-03-08 23:45:31.472'}, 'CENCOSUD': {'path_instrumento': 'Provisorios\\CENCOSUD', 'fecha_insercion': '2024-03-08 23:45:31.472'}, 'FALABELLA': {'path_instrumento': 'Provisorios\\FALABELLA', 'fecha_insercion': '2024-03-08 23:45:31.472'}, 'MALLPLAZA': {'path_instrumento': 'Provisorios\\MALLPLAZA', 'fecha_insercion': '2024-03-08 23:45:31.472'}, 'RIPLEY': {'path_instrumento': 'Provisorios\\RIPLEY', 'fecha_insercion': '2024-03-08 23:45:31.472'}, '#VLO': {'path_instrumento': 'CFD Acciones\\EEUU\\#VLO', 'fecha_insercion': '2024-03-08 23:45:31.472'}}
+instrumentos_path = {'#ADBE': {'path_instrumento': 'CFD Acciones\\EEUU\\#ADBE', 'path_grupo': None}, 'CENCOSUD': {'path_instrumento': 'Provisorios\\CENCOSUD', 'path_grupo': None}, 'FALABELLA': {'path_instrumento': 'Provisorios\\FALABELLA', 'path_grupo': None}, 'MALLPLAZA': {'path_instrumento': 'Provisorios\\MALLPLAZA', 'path_grupo': None}, 'RIPLEY': {'path_instrumento': 'Provisorios\\RIPLEY', 'path_grupo': None}, '#VLO': {'path_instrumento': 'CFD Acciones\\EEUU\\#VLO', 'path_grupo': None}}
 
-# Agrega el Spread en base a las ponderaciones PREMIUM y VIP
-nuevas_ponderaciones2 = dict()
+insert = list()
+update = list()
+no_update = list()
 
-for instrumento in nuevas_ponderaciones:
-    path_grupo = nuevas_ponderaciones[instrumento]['path_grupo']
-    for lista in agrupacion:
-        #print(path_grupo in lista[1])
-        #print(path_grupo[:path_grupo.find(" ")] in lista[1])
-        #print(path_grupo[:path_grupo.find("\\")] in lista[1])
-        # # # if path_grupo in lista[1]:
-        # # #     print('A: ',path_grupo)
-        # # # elif path_grupo[:path_grupo.find(" ")] in lista[1]:
-        # # #     print('B: ',path_grupo[:path_grupo.find(" ")])
-        # # # elif path_grupo[:path_grupo.find("\\")] in lista[1]:
-        # # #     print('C: ',path_grupo[:path_grupo.find("\\")])
-        #path_grupo if path_grupo == lista[1] else path_grupo[:path_grupo.find(" ")] if path_grupo.find(" ") > 0 else path_grupo[:path_grupo.find("\\")] if path_grupo.find("\\") > 0 else '1'
-        if path_grupo == lista[1] or path_grupo[:path_grupo.find(" ")] in lista[1] or path_grupo[:path_grupo.find("\\")] in lista[1]:
-            key = instrumento+lista[0]+str(lista[2])
-            nuevas_ponderaciones2[key] = {
-                # 'instrumento' : instrumento,
-                # 'tipo_instrumento' : nuevas_ponderaciones[instrumento]['tipo_instrumento'],
-                # 'tipo' : nuevas_ponderaciones[instrumento]['tipo'],
-                # 'monto_usd' : nuevas_ponderaciones[instrumento]['monto_usd'],
-                # 'categoria' : lista[0],
-                # 'path_instrumento' : nuevas_ponderaciones[instrumento]['path_instrumento'],
-                # 'path_grupo' : nuevas_ponderaciones[instrumento]['path_grupo'],
-                # 'moneda_calculo' : nuevas_ponderaciones[instrumento]['moneda_calculo'],
-                # 'precio' : nuevas_ponderaciones[instrumento]['precio'],
-                # 'tamanio_contrato' : nuevas_ponderaciones[instrumento]['tamanio_contrato'],
-                # 'spread_full' : nuevas_ponderaciones[instrumento]['spread_full'],
-                # 'spread_diff' : lista[2],
-                # 'spread_premium' : nuevas_ponderaciones[instrumento]['spread_full'] + lista[2],
-                # 'spread_vip' : nuevas_ponderaciones[instrumento]['spread_full'] + lista[2],
-                # 'ponderacion_full' : float(1),
-                # #'ponderacion_premium' : func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]),
-                # #'ponderacion_vip' : func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]),
-                # 'grupos_id' : ', '.join(map(str, sorted(lista[3]))),
-                # 'fecha_insercion_precio' : nuevas_ponderaciones[instrumento]['fecha_insercion_precio'],
-                # 'fecha_insercion_registro' : nuevas_ponderaciones[instrumento]['fecha_insercion_registro']
-            }
-            
-print(nuevas_ponderaciones2)
-            
-            
-            
-            
+for instrumento in instrumentos_mt5: # Muestra los "instrumentos de MT5"
+    if instrumento in instrumentos_path: # Si el "instrumento de MT5" esta en los "instrumentos de BDD (ponderaciones path)"
+        if instrumentos_mt5[instrumento]['path_instrumento'] != instrumentos_path[instrumento]['path_instrumento']: # Si el "Path Instrumento" de MT5 es distinto al "Path Instrumento" de la BDD
+            update.append([instrumento,instrumentos_mt5[instrumento]['path_instrumento']])
+        # elif instrumentos_path[instrumento]['path_instrumento'][0:instrumentos_path[instrumento]['path_instrumento'].find("\\")] == 'Provisorios' and instrumentos_path[instrumento]['path_grupo'] is None:
+        #     update.append([instrumento,instrumentos_path[instrumento]['path_instrumento']])
+        elif instrumentos_path[instrumento]['path_instrumento'][0:instrumentos_path[instrumento]['path_instrumento'].find("\\")] == 'Historicos' and instrumentos_path[instrumento]['path_grupo'] == '*': # Si el grupo instrumento "inicia en Historico" y el grupo path tiene "*", no actualiza 
+            no_update.append([instrumento,instrumentos_path[instrumento]['path_instrumento']])
+        elif instrumentos_path[instrumento]['path_grupo'] is not None: #! si el path grupo NO viene vacio
+            if instrumentos_path[instrumento]['path_instrumento'][0:instrumentos_path[instrumento]['path_instrumento'].find("\\")] != instrumentos_path[instrumento]['path_grupo'][0:instrumentos_path[instrumento]['path_grupo'].find("\\")]: # Si el "inicio del Path Instrumento" es distinto al "Inicio de Grupo Path"
+                update.append([instrumento,instrumentos_path[instrumento]['path_instrumento']])
+        else: # Si no es distinto, entonces no actualiza
+            no_update.append([instrumento,instrumentos_mt5[instrumento]['path_instrumento']])
+    else: # Si el "Instrumento MT5" no esta en "Instrumento BDD" entonces lo inserta
+        insert.append([instrumento,instrumentos_mt5[instrumento]['path_instrumento'],instrumentos_mt5[instrumento]['fecha_insercion']])
 
 
+
+print(f"\nInsert ({len(insert)}): {[x[0] for x in insert]}")
+print(f"\nUpdate ({len(update)}): {[x[0] for x in update]}")
+print(f"\nNO Update ({len(no_update)}): {[x[0] for x in no_update]}")

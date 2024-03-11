@@ -10,15 +10,7 @@ def func_sel_mt5_instrumento_path(conexion):
         TO_CHAR(NOW(), 'YYYY-MM-DD HH24:MI:SS.MS') as fecha_insercion_registro
 	from 
 		mt5_symbols ms
-	/*
-    where
-		ms."Path" not ilike 'historicos%'
-		and ms."Path" not ilike 'provisorios%'
-		and ms."Path" not ilike '%START%'
-		and ms."Path" not ilike 'alimentadores%'
-		and ms."Path" not ilike 'MarketExecution%'
-    where ms."Symbol" in ('CAC_Mar24','ETF_POTX','WTI_Mar24','SMU')
-    */
+    -- where ms."Symbol" in ('CENCOSUD','MALLPLAZA','FALABELLA','RIPLEY','#VLO','#ADBE') -- COMENTAR
     order by
         ms."Symbol" asc
     """
@@ -48,8 +40,8 @@ def func_sel_path_instrumento(conexion):
         rpp.path_instrumento,
         rpp.path_grupo
 	from
-		reports.rp_ponderaciones_path rpp
-    -- where rpp.instrumento not in ('AGUAS-A')
+		reports.py_rp_ponderaciones_path rpp
+    -- where rpp.instrumento in ('CENCOSUD','MALLPLAZA','FALABELLA','RIPLEY','#VLO','#ADBE') -- COMENTAR
     order by rpp.instrumento asc
     """
     cursor.execute(query_instrumentos)
@@ -70,7 +62,7 @@ def func_sel_path_instrumento(conexion):
 
 
 def func_sel_path_grupo_faltante(conexion,update_path):
-    # Obtiene los "Path Grupo" que son null.
+    # Obtiene los "Path Grupo" que son null o algun path que venga en el update_path.
     # IMPORTANTE: el "Path Grupo" sirve para obtener la diferencia de Spread.
     cursor = conexion.cursor()
     query_path_grupos_faltantes = f"""
@@ -79,7 +71,7 @@ def func_sel_path_grupo_faltante(conexion,update_path):
         rpp.path_instrumento,
         rpp.path_grupo
     from
-        reports.rp_ponderaciones_path rpp
+        reports.py_rp_ponderaciones_path rpp
     where
         rpp.path_grupo is null
         or rpp.path_grupo = ''
@@ -287,6 +279,8 @@ def func_sel_monto_moneda_usd(conexion):
         gbpusd = item[7]
         usdchf = item[8]
         usdmxn = item[9]
+        inicio = item[10].strftime("%d-%m-%Y %H:%M:%S")
+        fin = item[11].strftime("%d-%m-%Y %H:%M:%S")
         monto_moneda_a_usd = {
             'usdclp' : round(usdclp,5),
             'usdpen' : round(usdpen,5),
@@ -298,6 +292,7 @@ def func_sel_monto_moneda_usd(conexion):
             'gbpusd' : round(gbpusd,5),
             'usdchf' : round(usdchf,5),
             'usdmxn' : round(usdmxn,5),
+            'intervalo' : f"{inicio} al {fin}",
             }
         
         return monto_moneda_a_usd
@@ -578,7 +573,7 @@ def func_ins_instrumento_path(conexion, insert):
         rp_ponderaciones_path = (
         """
         INSERT INTO
-        reports.rp_ponderaciones_path
+        reports.py_rp_ponderaciones_path
         (
             instrumento,
             path_instrumento,
@@ -595,14 +590,15 @@ def func_ins_instrumento_path(conexion, insert):
         cursor.close()
         
         
-def func_ins_upd_path_grupo(conexion, llenado_path_grupo):
+def func_upd_path_grupo(conexion, llenado_path_grupo):
     # actualiza reports.rp_ponderacionxsymbol_python_update
+    # como el instrumento ya esta insertado y el path es nulo, pareciera que inserta...
     if len(llenado_path_grupo) >= 1:
         for clave, valor in llenado_path_grupo:
             query_llenado_path_grupo = (
             """
             update
-                reports.rp_ponderaciones_path
+                reports.py_rp_ponderaciones_path
             set
                 path_grupo = %s
             where
@@ -765,7 +761,7 @@ def func_upd_path_instrumento(conexion, update):
             query_update_path = (
             """
             update
-                reports.rp_ponderaciones_path
+                reports.py_rp_ponderaciones_path
             set
                 path_instrumento = %s
             where
