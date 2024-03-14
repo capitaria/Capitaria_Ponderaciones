@@ -122,7 +122,7 @@ def func_ponderaciones_campos_no_calculados(ponderacion_base):
             if key == 'path_grupo':
                 nuevas_ponderaciones[instrumento]['path_grupo'] = valor
             elif key == 'tamanio_1_lote':
-                nuevas_ponderaciones[instrumento]['tamanio_contrato'] = valor
+                nuevas_ponderaciones[instrumento]['tamano_contrato'] = valor
             elif key == 'moneda_base':
                 nuevas_ponderaciones[instrumento]['moneda_calculo'] = valor
             elif key == 'spread_full':
@@ -200,10 +200,10 @@ def func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones):
     for codigo in nuevas_ponderaciones:
         if codigo in viejas_ponderaciones:
             if (viejas_ponderaciones[codigo]['precio'] != nuevas_ponderaciones[codigo]['precio']
-                or viejas_ponderaciones[codigo]['spread_full'] != nuevas_ponderaciones[codigo]['spread_full']
-                or viejas_ponderaciones[codigo]['spread_diff'] != nuevas_ponderaciones[codigo]['spread_diff']
-                or viejas_ponderaciones[codigo]['spread_premium'] != nuevas_ponderaciones[codigo]['spread_premium']
-                or viejas_ponderaciones[codigo]['spread_vip'] != nuevas_ponderaciones[codigo]['spread_vip']
+                or viejas_ponderaciones[codigo]['spread_categoria'] != nuevas_ponderaciones[codigo]['spread_categoria']
+                #or viejas_ponderaciones[codigo]['spread_diff'] != nuevas_ponderaciones[codigo]['spread_diff']
+                #or viejas_ponderaciones[codigo]['spread_premium'] != nuevas_ponderaciones[codigo]['spread_premium']
+                #or viejas_ponderaciones[codigo]['spread_vip'] != nuevas_ponderaciones[codigo]['spread_vip']
                 or viejas_ponderaciones[codigo]['grupos_id'] != nuevas_ponderaciones[codigo]['grupos_id']
                 or viejas_ponderaciones[codigo]['monto_usd'] != nuevas_ponderaciones[codigo]['monto_usd']
                 or viejas_ponderaciones[codigo]['path_instrumento'] != nuevas_ponderaciones[codigo]['path_instrumento']
@@ -221,7 +221,12 @@ def func_grupos_y_simbolos(grupos_reales,grupos_simbolos):
     #Une los grupos reales con los grupos de cada simbolo
     grupos = list()
     
-    # grupo[0]:Numero Grupo - grupo[1]:Grupo - grupo[2]:Categoria - datos[1]:Path Instrumento - datos[2]:Spread Diferencia
+    # grupo[0] = Numero Grupo
+    # grupo[1] = Grupo
+    # grupo[2] = Categoria
+    # datos[0] = Numero Grupo
+    # datos[1] = Path Instrumento
+    # datos[2] = Spread Diferencia
     for grupo in grupos_reales:
         for datos in grupos_simbolos:
             if grupo[0] == datos[0]:
@@ -253,12 +258,18 @@ def func_agrupacion_categoria(grupos):
 def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupacion):
     # Agrega el Spread en base a las ponderaciones PREMIUM y VIP
     nuevas_ponderaciones2 = dict()
-
-    for instrumento in nuevas_ponderaciones:
-        path_grupo = nuevas_ponderaciones[instrumento]['path_grupo']
-        for lista in agrupacion:
+    for instrumento in nuevas_ponderaciones: #* WTI
+        path_grupo = nuevas_ponderaciones[instrumento]['path_grupo'] #* CFD Commodities\Spot\WTI
+        for lista in agrupacion: #* lista -> ['FUL', 'Forex\\Minors\\USDCOP', 100, [361]]
             if path_grupo == lista[1] or path_grupo[:path_grupo.find(" ")] in lista[1] or path_grupo[:path_grupo.find("\\")] in lista[1]:
-                key = instrumento+lista[0]+str(lista[2])
+                # # # key = instrumento+lista[0]+str(lista[2])
+                key = instrumento+lista[0]+str(
+                        nuevas_ponderaciones[instrumento]['spread_full'] if lista[0] == 'FUL'
+                        else nuevas_ponderaciones[instrumento]['spread_full'] + lista[2] if lista[0] == 'PRE'
+                        else nuevas_ponderaciones[instrumento]['spread_full'] + lista[2] if lista[0] == 'VIP'
+                        else 'X'
+                        #else nuevas_ponderaciones[instrumento]['spread_full']
+                                               )
                 nuevas_ponderaciones2[key] = {
                     'instrumento' : instrumento,
                     'tipo_instrumento' : nuevas_ponderaciones[instrumento]['tipo_instrumento'],
@@ -269,14 +280,24 @@ def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupaci
                     'path_grupo' : nuevas_ponderaciones[instrumento]['path_grupo'],
                     'moneda_calculo' : nuevas_ponderaciones[instrumento]['moneda_calculo'],
                     'precio' : nuevas_ponderaciones[instrumento]['precio'],
-                    'tamanio_contrato' : nuevas_ponderaciones[instrumento]['tamanio_contrato'],
-                    'spread_full' : nuevas_ponderaciones[instrumento]['spread_full'],
-                    'spread_diff' : lista[2],
-                    'spread_premium' : nuevas_ponderaciones[instrumento]['spread_full'] + lista[2],
-                    'spread_vip' : nuevas_ponderaciones[instrumento]['spread_full'] + lista[2],
-                    'ponderacion_full' : float(1),
-                    'ponderacion_premium' : 1, #func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]),
-                    'ponderacion_vip' : 1, #func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]),
+                    'tamano_contrato' : nuevas_ponderaciones[instrumento]['tamano_contrato'],
+                    'spread_categoria' :
+                        nuevas_ponderaciones[instrumento]['spread_full'] if lista[0] == 'FUL'
+                        else nuevas_ponderaciones[instrumento]['spread_full'] + lista[2] if lista[0] == 'PRE'
+                        else nuevas_ponderaciones[instrumento]['spread_full'] + lista[2] if lista[0] == 'VIP'
+                        else nuevas_ponderaciones[instrumento]['spread_full'],
+                    # # # 'spread_full' : nuevas_ponderaciones[instrumento]['spread_full'],
+                    # # # 'spread_diff' : lista[2],
+                    # # # 'spread_premium' : nuevas_ponderaciones[instrumento]['spread_full'] + lista[2],
+                    # # # 'spread_vip' : nuevas_ponderaciones[instrumento]['spread_full'] + lista[2],
+                    'ponderacion_categoria' : 
+                        float(1) if lista[0] == 'FUL'
+                        else 1 if lista[0] == 'PRE'
+                        else 1 if lista[0] == 'VIP'
+                        else float(1),
+                    # # 'ponderacion_full' : float(1),
+                    #! # 'ponderacion_premium' : 1, #func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]),
+                    #! # 'ponderacion_vip' : 1, #func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]),
                     'grupos_id' : ', '.join(map(str, sorted(lista[3]))),
                     'fecha_insercion_precio' : nuevas_ponderaciones[instrumento]['fecha_insercion_precio'],
                     'fecha_insercion_registro' : nuevas_ponderaciones[instrumento]['fecha_insercion_registro']

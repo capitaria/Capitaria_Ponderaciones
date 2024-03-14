@@ -10,7 +10,7 @@ def func_sel_mt5_instrumento_path(conexion):
         TO_CHAR(NOW(), 'YYYY-MM-DD HH24:MI:SS.MS') as fecha_insercion_registro
 	from 
 		mt5_symbols ms
-    -- where ms."Symbol" in ('CENCOSUD','MALLPLAZA','FALABELLA','RIPLEY','#VLO','#ADBE') -- COMENTAR
+    -- where ms."Symbol" in ('WTI','USDCLP') -- COMENTAR
     order by
         ms."Symbol" asc
     """
@@ -32,7 +32,7 @@ def func_sel_mt5_instrumento_path(conexion):
 
 
 def func_sel_path_instrumento(conexion):
-    # Obtiene todos los "instrumentos" y "path instrumento" de la tabla reports.rp_ponderaciones_path
+    # Obtiene todos los "instrumentos" y "path instrumento" de la tabla reports.py_rp_ponderaciones_path
     cursor = conexion.cursor()
     query_instrumentos = """
 	select 
@@ -41,7 +41,7 @@ def func_sel_path_instrumento(conexion):
         rpp.path_grupo
 	from
 		reports.py_rp_ponderaciones_path rpp
-    -- where rpp.instrumento in ('CENCOSUD','MALLPLAZA','FALABELLA','RIPLEY','#VLO','#ADBE') -- COMENTAR
+    -- where rpp.instrumento in ('WTI','USDCLP') -- COMENTAR
     order by rpp.instrumento asc
     """
     cursor.execute(query_instrumentos)
@@ -150,15 +150,15 @@ def func_sel_instrumentos_faltantes(conexion):
         and (pr.symbol not like '%x0%'
         and pr.symbol not like '%x2%'
         and pr.symbol not like '%x4%')
-        and pr.symbol in ('#NVDA')
-        /*
-        and pr.symbol in (
+        and pr.symbol in
+        (
             select 
 		        rpp.instrumento
 	        from
-		        reports.rp_ponderaciones_path rpp
+		        reports.py_rp_ponderaciones_path rpp
+            where
+                rpp.instrumento in ('WTI')
 	    )
-        */
     """
     # -- now()::date
     cursor.execute(query_instrumentos_faltantes)
@@ -196,7 +196,7 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
         ms."SwapLong" as swap_compra,
         ms."SwapShort" as swap_venta
     from
-        mt5_symbols ms inner join reports.rp_ponderaciones_path rpp
+        mt5_symbols ms inner join reports.py_rp_ponderaciones_path rpp
         on ms."Symbol" = rpp.instrumento
     where
         ms."Symbol" in {tuple([x for x in instrumentos_faltantes]) if len([x for x in instrumentos_faltantes]) > 1 else f"('{[x for x in instrumentos_faltantes][0]}')"}
@@ -205,7 +205,7 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
         and ms."Path" not ilike '%Alimentadores%'
         and ms."Path" not ilike '%Provisorios%'
         and ms."Path" not ilike '%MarketExecution%'
-        and ms."Symbol" = '#NVDA'
+        -- and ms."Symbol" = 'USDCLP'
 """
     
     cursor.execute(query_mt5_symbols) # Ejecuta la query
@@ -299,22 +299,23 @@ def func_sel_monto_moneda_usd(conexion):
     
 
 def func_sel_instrumentos_old_historical(conexion, instrumentos_faltantes):
-    # Obtiene los instrumentods de la base de datos de la tabla rp_ponderacionxsymbol_python_historical
+    # Obtiene los instrumentods de la base de datos de la tabla py_rp_ponderacionxsymbol_historical
     def func_fecha_maxima_historical(conexion):
-        # Obitiene la fecha Maxima de la inserciond e la tabla rp_ponderacionxsymbol_python_historical
+        # Obitiene la fecha Maxima de la insercion de la tabla py_rp_ponderacionxsymbol_historical
         cursor = conexion.cursor()
         query_fecha_max = """(
         select
             max(fecha_insercion_registro)::date
         from
-            reports.rp_ponderacionxsymbol_python_historical
+            reports.py_rp_ponderacionxsymbol_historical prph
         )"""
         cursor.execute(query_fecha_max)
         fecha_max = cursor.fetchall()
         return fecha_max
     
     fecha_maxima = func_fecha_maxima_historical(conexion)
-    fecha_maxima = fecha_maxima[0][0].strftime("%Y-%m-%d")
+    fecha_maxima = fecha_maxima[0][0]
+    fecha_maxima = fecha_maxima.strftime("%Y-%m-%d") if fecha_maxima is not None else '1987-10-24'
     
     cursor = conexion.cursor()
     query_instrumentos_old = f"""
@@ -323,18 +324,13 @@ def func_sel_instrumentos_old_historical(conexion, instrumentos_faltantes):
         precio,
         tamano_contrato,
         coalesce(monto_usd,0) as monto_usd,
-        spread_full,
-        spread_diff,
-        spread_premium,
-        spread_vip,
-        ponderacion_full,
-        ponderacion_premium,
-        ponderacion_vip,
+        spread_categoria,
+        ponderacion_categoria,
         path_instrumento,
         path_grupo,
         grupos_id
     from 
-        reports.rp_ponderacionxsymbol_python_historical rppu
+        reports.py_rp_ponderacionxsymbol_historical
     where
         fecha_insercion_registro::date = '{fecha_maxima}'
         and instrumento in {tuple([x for x in instrumentos_faltantes]) if len([x for x in instrumentos_faltantes]) > 1 else f"('{[x for x in instrumentos_faltantes][0]}')"}
@@ -347,36 +343,25 @@ def func_sel_instrumentos_old_historical(conexion, instrumentos_faltantes):
     for item in old_instrumentos:
         codigo = item[0]
         precio = item[1]
-        tamanio_contrato = item[2]
+        tamano_contrato = item[2]
         monto_usd = item[3]
-        spread_full = item[4]
-        spread_diff = item[5]
-        spread_premium = item[6]
-        spread_vip = item[7]
-        ponderacion_full = item[8]
-        ponderacion_premium = item[9]
-        ponderacion_vip = item[10]
-        path_instrumento = item[11]
-        path_grupo = item[12]
-        grupos_id = item[13]
+        spread_categoria = item[4]
+        ponderacion_categoria = item[5]
+        path_instrumento = item[6]
+        path_grupo = item[7]
+        grupos_id = item[8]
         viejas_ponderaciones[codigo] = {
             'precio' : round(precio,4),
-            'tamanio_contrato' : int(tamanio_contrato),
+            'tamano_contrato' : int(tamano_contrato),
             'monto_usd' : round(monto_usd,4),
-            'spread_full' : round(spread_full,4),
-            'spread_diff' : round(spread_diff,4),
-            'spread_premium': round(spread_premium,4),
-            'spread_vip': round(spread_vip,4),
-            'ponderacion_full': round(ponderacion_full,4),
-            'ponderacion_premium': round(ponderacion_premium,4),
-            'ponderacion_vip': round(ponderacion_vip,4),
+            'spread_categoria' : round(spread_categoria,4),
+            'ponderacion_categoria': round(ponderacion_categoria,4),
             'path_instrumento' : path_instrumento,
             'path_grupo' : path_grupo,
             'grupos_id' : grupos_id
             }
         
     return viejas_ponderaciones
-
 
 def func_sel_instrumentos_old_update(conexion, instrumentos_faltantes):
     # Obtiene los instrumentods de la base de datos de la tabla rp_ponderacionxsymbol_python_update
@@ -465,8 +450,8 @@ def func_sel_grupos_reales(conexion):
         and mg."Group" not ilike '%lite%'
         and mg."Group" not ilike '%sta%'
         and mg."Group" not ilike '%ins%mesa%'
-        -- and mg."Group" not like '%99' -- COMENTAR
-        and mg."Group_ID" in (535,148,166) -- COMENTAR
+        and mg."Group" not like '%99'
+        and mg."Group_ID" in (361,381,406) -- COMENTAR
     group by
         mg."Group_ID",
         mg."Group",
@@ -515,34 +500,15 @@ def func_sel_grupos_simbolos(conexion):
             and mg."Group" not ilike '%lite%'
             and mg."Group" not ilike '%sta%'
             and mg."Group" not ilike '%ins%mesa%'
-            -- and mg."Group" not like '%99' -- COMENTAR
-            and mg."Group_ID" in (111,148,166) -- COMENTAR
+            and mg."Group" not like '%99' -- COMENTAR
+            and mg."Group_ID" in (361,381,406) -- COMENTAR
         group by
             mg."Group_ID"
         having
             count(mu."Login") != 0   
         )
-    and mgs."Path" = 'CFD Acciones\EEUU\*' -- COMENTAR
+    -- and mgs."Path" = 'CFD Commodities\Spot\WTI' -- COMENTAR
     """
-    # select 
-    #     mgs."Group_ID" as grupo_id_asoc,
-    #     mgs."Path" as path,
-    #     mgs."SpreadDiff" as spread_premium_diff
-    # from
-    #     mt5_groups_symbols mgs
-	# where mgs."Group_ID" in (
-	# 	select 
-	# 	    mg."Group_ID" as grupo_id
-	# 	from
-	# 	    mt5_groups mg
-	# 	where
-	# 	    mg."Group" ilike 'real%'
-	# 	    and mg."Group" not ilike '%lite%'
-	# 	    and mg."Group" not ilike '%sta%'
-	# 	    and mg."Group" not ilike '%ins%mesa%'
-	# 	    -- and mg."Group_ID" not in (5,10,14)
-	# 	    -- and mg."Group_ID" in (456, 601, 147,148,554)
-	# )
 
     cursor.execute(query_grupos_simbolos)
     query_grupos_simbolos = cursor.fetchall()
@@ -564,7 +530,7 @@ def func_sel_grupos_simbolos(conexion):
 
 #^ INSERT
 def func_ins_instrumento_path(conexion, insert):
-    # inserta en reports.rp_ponderaciones_path
+    # inserta en reports.py_rp_ponderaciones_path
     if len(insert) >= 1:
         insert = [tuple(datos) for datos in insert]
         
@@ -613,7 +579,8 @@ def func_upd_path_grupo(conexion, llenado_path_grupo):
         
 
 def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
-    # inserta en la tabla reports.rp_ponderacionxsymbol_python_historical
+    # inserta en la tabla reports.py_rp_ponderacionxsymbol_historical
+
     if len(nuevas_ponderaciones) >= 1:
         new_ponderaciones_insert_historic = list()
         for codigo in nuevas_ponderaciones:
@@ -624,16 +591,11 @@ def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
                 nuevas_ponderaciones[codigo]['tipo'],
                 nuevas_ponderaciones[codigo]['categoria'],
                 nuevas_ponderaciones[codigo]['precio'],
-                nuevas_ponderaciones[codigo]['tamanio_contrato'],
+                nuevas_ponderaciones[codigo]['tamano_contrato'],
                 nuevas_ponderaciones[codigo]['moneda_calculo'],
                 nuevas_ponderaciones[codigo]['monto_usd'],
-                nuevas_ponderaciones[codigo]['spread_full'],
-                nuevas_ponderaciones[codigo]['spread_diff'],
-                nuevas_ponderaciones[codigo]['spread_premium'],
-                nuevas_ponderaciones[codigo]['spread_vip'],
-                nuevas_ponderaciones[codigo]['ponderacion_full'],
-                nuevas_ponderaciones[codigo]['ponderacion_premium'],
-                nuevas_ponderaciones[codigo]['ponderacion_vip'],
+                nuevas_ponderaciones[codigo]['spread_categoria'],
+                nuevas_ponderaciones[codigo]['ponderacion_categoria'],
                 nuevas_ponderaciones[codigo]['path_instrumento'],
                 nuevas_ponderaciones[codigo]['path_grupo'],
                 nuevas_ponderaciones[codigo]['grupos_id'],
@@ -642,13 +604,12 @@ def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
             ]
             new_ponderaciones_insert_historic.append(tuple(datos))
             
-            
         cursor = conexion.cursor()
         
         rp_ponderacionxsymbol_python = (
         """
         INSERT INTO
-        reports.rp_ponderacionxsymbol_python_historical
+        reports.py_rp_ponderacionxsymbol_historical
         (
             codigo,
             instrumento,
@@ -659,13 +620,8 @@ def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
             tamano_contrato,
             moneda_calculo,
             monto_usd,
-            spread_full,
-            spread_diff,
-            spread_premium,
-            spread_vip,
-            ponderacion_full,
-            ponderacion_premium,
-            ponderacion_vip,
+            spread_categoria,
+            ponderacion_categoria,
             path_instrumento,
             path_grupo,
             grupos_id,
@@ -674,7 +630,7 @@ def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
         )
         VALUES
         (
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
         )
         """)
         
@@ -755,7 +711,7 @@ def func_ins_datos_ponderados(conexion, insert):
 
 #~ UPDATE
 def func_upd_path_instrumento(conexion, update):
-    # Actualiza el "path instrumento" en reports.rp_ponderaciones_path
+    # Actualiza el "path instrumento" en reports.py_rp_ponderaciones_path
     if len(update) >= 1:
         for clave, valor in update:
             query_update_path = (

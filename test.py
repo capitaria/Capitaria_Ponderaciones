@@ -1,28 +1,19 @@
-instrumentos_mt5 = {'#ADBE': {'path_instrumento': 'CFD Acciones\\EEUU\\#ADBE', 'fecha_insercion': '2024-03-08 23:45:31.472'}, 'CENCOSUD': {'path_instrumento': 'Provisorios\\CENCOSUD', 'fecha_insercion': '2024-03-08 23:45:31.472'}, 'FALABELLA': {'path_instrumento': 'Provisorios\\FALABELLA', 'fecha_insercion': '2024-03-08 23:45:31.472'}, 'MALLPLAZA': {'path_instrumento': 'Provisorios\\MALLPLAZA', 'fecha_insercion': '2024-03-08 23:45:31.472'}, 'RIPLEY': {'path_instrumento': 'Provisorios\\RIPLEY', 'fecha_insercion': '2024-03-08 23:45:31.472'}, '#VLO': {'path_instrumento': 'CFD Acciones\\EEUU\\#VLO', 'fecha_insercion': '2024-03-08 23:45:31.472'}}
-instrumentos_path = {'#ADBE': {'path_instrumento': 'CFD Acciones\\EEUU\\#ADBE', 'path_grupo': None}, 'CENCOSUD': {'path_instrumento': 'Provisorios\\CENCOSUD', 'path_grupo': None}, 'FALABELLA': {'path_instrumento': 'Provisorios\\FALABELLA', 'path_grupo': None}, 'MALLPLAZA': {'path_instrumento': 'Provisorios\\MALLPLAZA', 'path_grupo': None}, 'RIPLEY': {'path_instrumento': 'Provisorios\\RIPLEY', 'path_grupo': None}, '#VLO': {'path_instrumento': 'CFD Acciones\\EEUU\\#VLO', 'path_grupo': None}}
+nuevas_ponderaciones = {'WTI': {'path_instrumento': 'CFD Commodities\\Spot\\WTI', 'path_grupo': 'CFD Commodities\\Spot\\WTI', 'moneda_calculo': 'USD', 'tamano_contrato': 1000, 'spread_full': 200, 'tipo_instrumento': 'COMMODITIES', 'tipo': 'COMMODITIES', 'monto_usd': 1.0, 'precio': 78.283, 'fecha_insercion_precio': '2024-02-22 18:05:05.180', 'fecha_insercion_registro': '2024-03-14 16:47:13.757'}}
+agrupacion = [['FUL', 'Forex\\Minors\\USDCOP', 100, [361]], ['FUL', 'Forex*', 0, [361]], ['FUL', 'CFD*', 0, [361]], ['PRE', 'Forex\\Majors\\USDCHF', 0, [381]], ['PRE', 'CFD Indices\\USDX\\*', -5, [381]], ['PRE', 'CFD Indices\\VIX\\*', -3, [381]], ['PRE', 'Forex\\Majors\\USDJPY', 0, [381]], ['PRE', 'Forex\\Majors\\USDPLN', 0, [381]], ['PRE', 'Forex\\Majors\\USDSGD', 0, [381]], ['PRE', 'Forex\\Minors\\*', 0, [381]], ['PRE', 'CFD Commodities\\Spot\\BRENT', -50, [381]], ['PRE', 'CFD Commodities\\Spot\\WTI', -50, [381]], ['PRE', 'CFD Commodities\\Futuros 1\\*', -30, [381]], ['PRE', 'CFD Commodities\\Futuros 2\\*', -10, [381]], ['PRE', 'CFD Commodities\\Futuros 3\\*', -5, [381]], ['PRE', 'CFD Indices\\Latam\\*', -1000, [381]], ['PRE', 'CFD Acciones\\EEUU C\\*', 0, [381]], ['PRE', 'CFD Acciones\\Chile\\*', 0, [381]], ['PRE', 'Forex\\Majors\\GBPNZD', 0, [381]], ['PRE', 'Forex\\Majors\\GBPUSD', 0, [381]], ['PRE', 'Forex\\Majors\\NZDUSD', 0, [381]], ['PRE', 'Forex\\Majors\\USDCAD', 0, [381]], ['PRE', 'CFD Commodities\\Spot\\XAGUSD', -10, [381]], ['PRE', 'CFD Commodities\\Spot\\XAUUSD', -10, [381]], ['PRE', 'Forex\\New\\USDCNH', 0, [381]], ['PRE', 'CFD Criptomonedas\\*', 0, [381]], ['PRE', 'CFD Indices\\EEUU\\*', -100, [381]], ['PRE', 'CFD Indices\\EU\\*', -200, [381]], ['PRE', 'CFD Acciones\\Toronto\\*', 0, [381]], ['PRE', 'CFD Acciones\\EURO\\*', 0, [381]], ['PRE', 'CFD Acciones\\Londres\\*', 0, [381]], ['PRE', 'CFD Acciones\\Tokio\\*', 0, [381]], ['PRE', 'CFD ETFs\\*', 0, [381]], ['PRE', 'CFD Acciones\\EEUU\\*', 0, [381]], ['PRE', 'CFD Acciones\\CFD ADR\\*', 0, [381]], ['PRE', 'Forex\\Minors\\USDCOP', 100, [381]], ['PRE', 'Forex\\CLP\\*', -10, [381]], ['PRE', 'Forex\\Majors\\AUDCAD', 0, [381]], ['PRE', 'Forex\\Majors\\AUDJPY', 0, [381]], ['PRE', 'Forex\\Majors\\AUDUSD', 0, [381]], ['PRE', 'Forex\\Majors\\EURAUD', 0, [381]], ['PRE', 'Forex\\Majors\\EURCAD', 0, [381]], ['PRE', 'Forex\\Majors\\EURCHF', 0, [381]], ['PRE', 'Forex\\Majors\\EURGBP', 0, [381]], ['PRE', 'Forex\\Majors\\EURJPY', 0, [381]], ['PRE', 'Forex\\Majors\\EURUSD', 0, [381]], ['PRE', 'Forex\\Majors\\GBPCHF', 0, [381]], ['PRE', 'Forex\\Majors\\GBPJPY', 0, [381]], ['VIP', 'CFD Criptomonedas\\*', 0, [406]], ['VIP', 'CFD Indices\\EEUU\\*', -100, [406]], ['VIP', 'CFD Indices\\EU\\*', -200, [406]], ['VIP', 'Forex\\Majors\\USDJPY', -1, [406]], ['VIP', 'Forex\\Majors\\USDPLN', -1, [406]], ['VIP', 'Forex\\Majors\\USDSGD', -1, [406]], ['VIP', 'Forex\\Minors\\*', -1, [406]], ['VIP', 'CFD Commodities\\Spot\\BRENT', -50, [406]], ['VIP', 'CFD Commodities\\Spot\\WTI', -50, [406]], ['VIP', 'CFD Commodities\\Futuros 1\\*', -30, [406]], ['VIP', 'CFD Commodities\\Futuros 2\\*', -10, [406]], ['VIP', 'CFD Commodities\\Futuros 3\\*', -5, [406]], ['VIP', 'CFD Indices\\Latam\\*', -1000, [406]], ['VIP', 'CFD Indices\\USDX\\*', -5, [406]], ['VIP', 'CFD Indices\\VIX\\*', -3, [406]], ['VIP', 'CFD Acciones\\Chile\\*', 0, [406]], ['VIP', 'CFD Acciones\\EEUU C\\*', 0, [406]], ['VIP', 'CFD Commodities\\Spot\\XAGUSD', -10, [406]], ['VIP', 'CFD Commodities\\Spot\\XAUUSD', -10, [406]], ['VIP', 'Forex\\New\\USDCNH', 0, [406]], ['VIP', 'Forex\\Minors\\USDCOP', 100, [406]], ['VIP', 'Forex\\Majors\\AUDJPY', -1, [406]], ['VIP', 'Forex\\Majors\\AUDUSD', -1, [406]], ['VIP', 'Forex\\Majors\\EURAUD', -1, [406]], ['VIP', 'Forex\\Majors\\EURCAD', -1, [406]], ['VIP', 'CFD Acciones\\EEUU\\*', 0, [406]], ['VIP', 'CFD Acciones\\CFD ADR\\*', 0, [406]], ['VIP', 'CFD Acciones\\Toronto\\*', 0, [406]], ['VIP', 'CFD Acciones\\EURO\\*', 0, [406]], ['VIP', 'CFD Acciones\\Londres\\*', 0, [406]], ['VIP', 'CFD Acciones\\Tokio\\*', 0, [406]], ['VIP', 'CFD ETFs\\*', 0, [406]], ['VIP', 'Forex\\CLP\\*', -10, [406]], ['VIP', 'Forex\\Majors\\AUDCAD', -1, [406]], ['VIP', 'Forex\\Majors\\EURCHF', -1, [406]], ['VIP', 'Forex\\Majors\\EURGBP', -1, [406]], ['VIP', 'Forex\\Majors\\EURJPY', -1, [406]], ['VIP', 'Forex\\Majors\\EURUSD', -5, [406]], ['VIP', 'Forex\\Majors\\GBPCHF', -1, [406]], ['VIP', 'Forex\\Majors\\GBPJPY', -1, [406]], ['VIP', 'Forex\\Majors\\GBPNZD', -1, [406]], ['VIP', 'Forex\\Majors\\GBPUSD', -1, [406]], ['VIP', 'Forex\\Majors\\NZDUSD', -1, [406]], ['VIP', 'Forex\\Majors\\USDCAD', -1, [406]], ['VIP', 'Forex\\Majors\\USDCHF', -1, [406]]]
 
-insert = list()
-update = list()
-no_update = list()
+# for instrumento in nuevas_ponderaciones:
+#     path_grupo = nuevas_ponderaciones[instrumento]['path_grupo'] #* CFD Commodities\Spot\WTI
+#     print(nuevas_ponderaciones)
+#     print()
+    
+# for lista in agrupacion:
+#     print(lista)
+    
 
-for instrumento in instrumentos_mt5: # Muestra los "instrumentos de MT5"
-    if instrumento in instrumentos_path: # Si el "instrumento de MT5" esta en los "instrumentos de BDD (ponderaciones path)"
-        if instrumentos_mt5[instrumento]['path_instrumento'] != instrumentos_path[instrumento]['path_instrumento']: # Si el "Path Instrumento" de MT5 es distinto al "Path Instrumento" de la BDD
-            update.append([instrumento,instrumentos_mt5[instrumento]['path_instrumento']])
-        # elif instrumentos_path[instrumento]['path_instrumento'][0:instrumentos_path[instrumento]['path_instrumento'].find("\\")] == 'Provisorios' and instrumentos_path[instrumento]['path_grupo'] is None:
-        #     update.append([instrumento,instrumentos_path[instrumento]['path_instrumento']])
-        elif instrumentos_path[instrumento]['path_instrumento'][0:instrumentos_path[instrumento]['path_instrumento'].find("\\")] == 'Historicos' and instrumentos_path[instrumento]['path_grupo'] == '*': # Si el grupo instrumento "inicia en Historico" y el grupo path tiene "*", no actualiza 
-            no_update.append([instrumento,instrumentos_path[instrumento]['path_instrumento']])
-        elif instrumentos_path[instrumento]['path_grupo'] is not None: #! si el path grupo NO viene vacio
-            if instrumentos_path[instrumento]['path_instrumento'][0:instrumentos_path[instrumento]['path_instrumento'].find("\\")] != instrumentos_path[instrumento]['path_grupo'][0:instrumentos_path[instrumento]['path_grupo'].find("\\")]: # Si el "inicio del Path Instrumento" es distinto al "Inicio de Grupo Path"
-                update.append([instrumento,instrumentos_path[instrumento]['path_instrumento']])
-        else: # Si no es distinto, entonces no actualiza
-            no_update.append([instrumento,instrumentos_mt5[instrumento]['path_instrumento']])
-    else: # Si el "Instrumento MT5" no esta en "Instrumento BDD" entonces lo inserta
-        insert.append([instrumento,instrumentos_mt5[instrumento]['path_instrumento'],instrumentos_mt5[instrumento]['fecha_insercion']])
-
-
-
-print(f"\nInsert ({len(insert)}): {[x[0] for x in insert]}")
-print(f"\nUpdate ({len(update)}): {[x[0] for x in update]}")
-print(f"\nNO Update ({len(no_update)}): {[x[0] for x in no_update]}")
+for instrumento in nuevas_ponderaciones: 
+    path_grupo = nuevas_ponderaciones[instrumento]['path_grupo'] #* CFD Commodities\Spot\WTI
+    for lista in agrupacion: #* lista -> ['FUL', 'CFD*', 0, [361]]
+        if path_grupo == lista[1] or path_grupo[:path_grupo.find(" ")] in lista[1] or path_grupo[:path_grupo.find("\\")] in lista[1]:
+            print(lista[0]+' '+lista[1])
+            #print(path_grupo[:path_grupo.find(" ")])
+            #print(path_grupo[:path_grupo.find("\\")])
