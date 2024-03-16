@@ -138,27 +138,24 @@ def func_sel_instrumentos_faltantes(conexion):
     # Obtiene los instrumentos y precio de pr_precios
     cursor = conexion.cursor()
     query_instrumentos_faltantes = f"""
-    select
-        pr.symbol as instrumento,
-        round(((pr.bidlast + pr.asklast)/2)::numeric,4) as precio,
-        TO_CHAR(pr.fecha_insercion, 'YYYY-MM-DD HH24:MI:SS.MS') as fecha_insercion_precio,
-        TO_CHAR(NOW(), 'YYYY-MM-DD HH24:MI:SS.MS') as fecha_insercion_registro
-    from
-        reports.rp_precios pr
-    where
-        pr.fecha_insercion::date = '2024-02-22'
-        and (pr.symbol not like '%x0%'
-        and pr.symbol not like '%x2%'
-        and pr.symbol not like '%x4%')
-        and pr.symbol in
-        (
-            select 
-		        rpp.instrumento
-	        from
-		        reports.py_rp_ponderaciones_path rpp
-            where
-                rpp.instrumento in ('WTI')
-	    )
+        select
+            pr.symbol as instrumento,
+            round(((pr.bidlast + pr.asklast)/2)::numeric,4) as precio,
+            TO_CHAR(pr.fecha_insercion, 'YYYY-MM-DD HH24:MI:SS.MS') as fecha_insercion_precio,
+            TO_CHAR(NOW(), 'YYYY-MM-DD HH24:MI:SS.MS') as fecha_insercion_registro
+        from
+            reports.rp_precios pr
+        where
+            pr.fecha_insercion::date = '2024-02-22'
+            and pr.symbol in
+            (
+                select 
+                    rpp.instrumento
+                from
+                    reports.py_rp_ponderaciones_path rpp
+                where
+                    rpp.instrumento in ('WTI')
+            )
     """
     # -- now()::date
     cursor.execute(query_instrumentos_faltantes)
@@ -451,7 +448,7 @@ def func_sel_grupos_reales(conexion):
         and mg."Group" not ilike '%sta%'
         and mg."Group" not ilike '%ins%mesa%'
         and mg."Group" not like '%99'
-        and mg."Group_ID" in (361,381,406) -- COMENTAR
+        -- and mg."Group_ID" in (147) -- COMENTAR
     group by
         mg."Group_ID",
         mg."Group",
@@ -485,7 +482,7 @@ def func_sel_grupos_simbolos(conexion):
     select 
         mgs."Group_ID" as grupo_id_asoc,
         mgs."Path" as path,
-        coalesce(mgs."SpreadDiff",0) as spread_premium_diff
+        coalesce(mgs."SpreadDiff",0) as spread_diff
     from
         mt5_groups_symbols mgs
     where mgs."Group_ID" in 
@@ -501,7 +498,7 @@ def func_sel_grupos_simbolos(conexion):
             and mg."Group" not ilike '%sta%'
             and mg."Group" not ilike '%ins%mesa%'
             and mg."Group" not like '%99' -- COMENTAR
-            and mg."Group_ID" in (361,381,406) -- COMENTAR
+            -- and mg."Group_ID" in (147) -- COMENTAR
         group by
             mg."Group_ID"
         having
@@ -518,11 +515,11 @@ def func_sel_grupos_simbolos(conexion):
     for item in query_grupos_simbolos:
         grupo_id_asoc = int(item[0])
         path = item[1]
-        spread_premium_diff = item[2]
+        spread_diff = item[2]
         grupos_simbolos.append([
             grupo_id_asoc,
             path,
-            spread_premium_diff
+            spread_diff
         ])
 
     return grupos_simbolos
@@ -595,6 +592,7 @@ def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
                 nuevas_ponderaciones[codigo]['moneda_calculo'],
                 nuevas_ponderaciones[codigo]['monto_usd'],
                 nuevas_ponderaciones[codigo]['spread_categoria'],
+                nuevas_ponderaciones[codigo]['spread_diff_categoria'],
                 nuevas_ponderaciones[codigo]['ponderacion_categoria'],
                 nuevas_ponderaciones[codigo]['path_instrumento'],
                 nuevas_ponderaciones[codigo]['path_grupo'],
@@ -603,6 +601,7 @@ def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
                 nuevas_ponderaciones[codigo]['fecha_insercion_registro']
             ]
             new_ponderaciones_insert_historic.append(tuple(datos))
+    #print(new_ponderaciones_insert_historic)
             
         cursor = conexion.cursor()
         
@@ -621,6 +620,7 @@ def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
             moneda_calculo,
             monto_usd,
             spread_categoria,
+            spread_diff_categoria,
             ponderacion_categoria,
             path_instrumento,
             path_grupo,
@@ -630,14 +630,14 @@ def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
         )
         VALUES
         (
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
         )
         """)
         
         cursor.executemany(rp_ponderacionxsymbol_python,new_ponderaciones_insert_historic)
         conexion.commit()
         cursor.close()
-
+        
 
 def func_ins_datos_ponderados(conexion, insert):
     # inserta en reports.rp_ponderacionxsymbol_python_update

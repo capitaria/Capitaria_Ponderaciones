@@ -39,22 +39,18 @@ try:
         #^ Crea las agrupaciones en base a la union de los grupos reales y los grupos de simbolos
         grupos_reales = func_sel_grupos_reales(conexion) #* SELECT (Mod)
         grupos_simbolos = func_sel_grupos_simbolos(conexion) #* SELECT (Mod)
-        #print(f"{grupos_reales}\n{grupos_simbolos}")
         grupos = func_grupos_y_simbolos(grupos_reales,grupos_simbolos)
-        agrupacion = func_agrupacion_categoria(grupos)        
-        
+        agrupacion = func_agrupacion_categoria(grupos)   
+
         #^ Junta las Nuevas Ponderaciones con la Agrupacion dejando un Codigo unico
         nuevas_ponderaciones = func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupacion)
-        breakpoint()
         
         #^ Verifica los instrumentos que ya existen en la BDD
         viejas_ponderaciones = func_sel_instrumentos_old_historical(conexion, instrumentos_faltantes)
         insert_instrumento, update_instrumento, no_update_instrumento = func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones)
-        #print(f"\nInsert ({len(insert_instrumento)}) // Update ({len(update_instrumento)}) // No Update ({len(no_update_instrumento)})\n")        
         
         #^ Inserta (tabla historica y update) y Actualiza (update) en la Base de Datos
         func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones) #! INSERT REVISAR
-        # todo - modificar el codigo
         fecha_prox_mes_fiscal_exacta, fecha_prox_mes_fiscal_correcta = func_mes_fiscal(fecha_consultada)
         # if fecha_consultada == fecha_prox_mes_fiscal_correcta: #todo Se actualiza los cierres de mes
         #     #func_sel_instrumentos_old_update(conexion,instrumentos_faltantes) #& REVISAR EL 23
