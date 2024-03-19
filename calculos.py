@@ -164,7 +164,7 @@ def func_ponderaciones_campos_calculados(nuevas_ponderaciones,instrumentos_falta
 
 
 def func_actualiza_path_instrumentos(instrumentos_mt5,instrumentos_path):
-    # Verifica si el instrumento existe en la tabla reports.rp_ponderaciones_path
+    # Verifica si el instrumento existe en la tabla python_extract.rp_ponderaciones_path
     # en caso de existir actualiza el "path instrumento" solo si fue cambiado
     # si el instrumento no existe lo crea en la misma tabla.
     insert = list()
@@ -179,7 +179,7 @@ def func_actualiza_path_instrumentos(instrumentos_mt5,instrumentos_path):
             #     update.append([instrumento,instrumentos_path[instrumento]['path_instrumento']])
             elif instrumentos_path[instrumento]['path_instrumento'][0:instrumentos_path[instrumento]['path_instrumento'].find("\\")] == 'Historicos' and instrumentos_path[instrumento]['path_grupo'] == '*': # Si el grupo instrumento "inicia en Historico" y el grupo path tiene "*", no actualiza 
                 no_update.append([instrumento,instrumentos_path[instrumento]['path_instrumento']])
-            elif instrumentos_path[instrumento]['path_grupo'] is not None: #! si el path grupo NO viene vacio
+            elif instrumentos_path[instrumento]['path_grupo'] is not None: # si el path grupo NO viene vacio
                 if instrumentos_path[instrumento]['path_instrumento'][0:instrumentos_path[instrumento]['path_instrumento'].find("\\")] != instrumentos_path[instrumento]['path_grupo'][0:instrumentos_path[instrumento]['path_grupo'].find("\\")]: # Si el "inicio del Path Instrumento" es distinto al "Inicio de Grupo Path"
                     update.append([instrumento,instrumentos_path[instrumento]['path_instrumento']])
             else: # Si no es distinto, entonces no actualiza
@@ -341,7 +341,7 @@ def func_mes_fiscal(fecha_consultada):
     else:
         fecha_prox_mes_fiscal_correcta = (fecha_prox_mes_fiscal_exacta - timedelta(days=2))
 
-    return fecha_prox_mes_fiscal_exacta, fecha_prox_mes_fiscal_correcta
+    return fecha_prox_mes_fiscal_correcta
 
 def tiempo_exacto(xseg):
     minutos = xseg // 60
