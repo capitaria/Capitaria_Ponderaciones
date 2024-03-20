@@ -10,7 +10,6 @@ def func_sel_mt5_instrumento_path(conexion):
         TO_CHAR(NOW(), 'YYYY-MM-DD HH24:MI:SS.MS') as fecha_insercion_registro
 	from 
 		mt5_symbols ms
-    -- where ms."Symbol" in ('WTI','USDCLP') -- COMENTAR
     order by
         ms."Symbol" asc
     """
@@ -41,7 +40,6 @@ def func_sel_path_instrumento(conexion):
         rpp.path_grupo
 	from
 		python_extract.py_rp_ponderaciones_path rpp
-    -- where rpp.instrumento in ('WTI','USDCLP') -- COMENTAR
     order by rpp.instrumento asc
     """
     cursor.execute(query_instrumentos)
@@ -155,11 +153,10 @@ def func_sel_instrumentos_faltantes(conexion, fecha_consultada):
                     python_extract.py_rp_ponderaciones_path ppp
                 where
                     ppp.path_grupo not in ('START\*','Provisorios\*','*','MarketExecution\*','Alimentadores\*','Acc Chile\*')
-                    and ppp.instrumento in ()
-                    -- ('ETF_LQD','ETF_METV','ETF_NERD','ETF_NUGT','ETF_PAVE','ETF_PBW','ETF_PEJ','ETF_QQQ','ETF_ROBT','ETF_RSX','ETF_SLV','ETF_SNSR','ETF_SOXL','ETF_SOYB','ETF_SPXL','ETF_SPY','ETF_TBT','ETF_TLT','ETF_TMF','ETF_TNA','ETF_TQQQ','ETF_TZA','ETF_URA','ETF_USO','ETF_VBK','ETF_VGK','ETF_VNQ','ETF_VTI','ETF_VTV','ETF_VWO','ETF_VXX','ETF_XLB','ETF_XLC','ETF_XLE','ETF_XLF','ETF_XLI','ETF_XLK','ETF_XLP','ETF_XLRE','ETF_XLU','ETF_XLV','USDCLP','EURCLP','USDMXN','EURNOK','USDNOK','USDSEK','USDZAR','LN.HSBA','LTM.C','T.NINTENDO')
+                    -- and ppp.instrumento = 'USDCLP'
             )
     """
-    #'DOTUSD','NK','CADJPY','USDCLPmar24','USDCLPabr24','USDCLPmay24','Maiz_May24','PetrC_Abr24','Palad_Jun24','USDCOP','Plati_Abr24','UK100_Jun24','WS30_Jun24','#ADR_VIST','Bvspa_Abr24','TriUS_May24','WTI_Abr24','ETF_IBIT'
+    
     # -- now()::date
     cursor.execute(query_instrumentos_faltantes)
     query_instrumentos_faltantes = cursor.fetchall()
@@ -205,8 +202,9 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
         and ms."Path" not ilike '%Alimentadores%'
         and ms."Path" not ilike '%Provisorios%'
         and ms."Path" not ilike '%MarketExecution%'
-        -- and ms."Symbol" = 'USDCLP'
+        -- and ms."Symbol" not in ('USDCLP', 'USDCLPabr24', 'USDCLPmar24', 'USDCLPmay24', 'USDCOP')
 """
+
     
     cursor.execute(query_mt5_symbols) # Ejecuta la query
     query_mt5_symbols = cursor.fetchall()
@@ -458,7 +456,6 @@ def func_sel_grupos_reales(conexion):
         and mg."Group" not ilike '%sta%'
         and mg."Group" not ilike '%ins%mesa%'
         and mg."Group" not like '%99'
-        -- and mg."Group_ID" in (147) -- COMENTAR
     group by
         mg."Group_ID",
         mg."Group",
@@ -508,7 +505,6 @@ def func_sel_grupos_simbolos(conexion):
             and mg."Group" not ilike '%sta%'
             and mg."Group" not ilike '%ins%mesa%'
             and mg."Group" not like '%99' -- COMENTAR
-            -- and mg."Group_ID" in (147) -- COMENTAR
         group by
             mg."Group_ID"
         having

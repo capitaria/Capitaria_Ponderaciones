@@ -266,13 +266,15 @@ def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupaci
         for lista in agrupacion: #* lista -> ['FUL', 'Forex\\Minors\\USDCOP', 100, [361]]
             #if path_grupo == lista[1] or path_grupo[:path_grupo.find(" ")] in lista[1] or path_grupo[:path_grupo.find("\\")] in lista[1]:
             if path_grupo == lista[1] or path_grupo[:path_grupo.find("*")-1]+'*' in lista[1] or path_grupo[:path_grupo.find(" ")]+'*' in lista[1]:
+                # print(instrumento, lista[0],nuevas_ponderaciones[instrumento]['spread_full'],lista[2])
+                # breakpoint()
                 key = instrumento+lista[0]+str(lista[2])
                 # key = instrumento+lista[0]+str(
                 #         nuevas_ponderaciones[instrumento]['spread_full'] if lista[0] == 'FUL'
                 #         else nuevas_ponderaciones[instrumento]['spread_full'] + lista[2] if lista[0] == 'PRE'
                 #         else nuevas_ponderaciones[instrumento]['spread_full'] + lista[2] if lista[0] == 'VIP'
                 #         else 'X'
-                #         #else nuevas_ponderaciones[instrumento]['spread_full']                           )
+                #         #else nuevas_ponderaciones[instrumento]['spread_full'])
                 nuevas_ponderaciones2[key] = {
                     'instrumento' : instrumento,
                     'tipo_instrumento' : nuevas_ponderaciones[instrumento]['tipo_instrumento'],
@@ -285,18 +287,14 @@ def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupaci
                     'precio' : nuevas_ponderaciones[instrumento]['precio'],
                     'tamano_contrato' : nuevas_ponderaciones[instrumento]['tamano_contrato'],
                     'spread_categoria' :
-                        nuevas_ponderaciones[instrumento]['spread_full'] if lista[0] == 'FUL'
-                        else nuevas_ponderaciones[instrumento]['spread_full'] + lista[2] if lista[0] == 'PRE'
-                        else nuevas_ponderaciones[instrumento]['spread_full'] + lista[2] if lista[0] == 'VIP'
-                        else nuevas_ponderaciones[instrumento]['spread_full'],
-                    'spread_diff_categoria' : lista[2],
-                    'ponderacion_categoria' :
-                        float(1) if lista[0] == 'FUL'
-                        else func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]) if lista[0] == 'PRE'
-                        else func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]) if lista[0] == 'VIP'
-                        else float(1),
+                        func_spread_categoria(lista[0],nuevas_ponderaciones[instrumento]['spread_full'],lista[2],nuevas_ponderaciones[instrumento]['tipo_instrumento']),
+                    'spread_diff_categoria' : lista[2]/100 if nuevas_ponderaciones[instrumento]['tipo_instrumento'] == 'INDICES' else lista[2],
+                    'ponderacion_categoria' : 1,
+                        # float(1) if lista[0] == 'FUL'
+                        # else func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]) if lista[0] == 'PRE'
+                        # else func_ponderacion(nuevas_ponderaciones[instrumento]['spread_full'], lista[2], nuevas_ponderaciones[instrumento]['spread_full'] + lista[2]) if lista[0] == 'VIP'
+                        # else float(1),
                     'grupos_id' : ', '.join(map(str, sorted(lista[3]))),
-                    #'grupos' : ', '.join(map(str, sorted(lista[4]))), #* se puede comentar
                     'fecha_insercion_precio' : nuevas_ponderaciones[instrumento]['fecha_insercion_precio'],
                     'fecha_insercion_registro' : nuevas_ponderaciones[instrumento]['fecha_insercion_registro']
                 }
@@ -304,13 +302,31 @@ def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupaci
     return nuevas_ponderaciones2
 
 
+def func_spread_categoria(categoria, spread_full, spread_diff,tipo_instrumento):
+    if categoria == 'FUL':
+        if tipo_instrumento == 'INDICES':
+            return spread_full/100
+        else:
+            return spread_full
+    elif categoria == 'PRE':
+        if tipo_instrumento == 'INDICES':
+            return (spread_full+spread_diff)/100
+        else:
+            return spread_full+spread_diff
+    elif categoria == 'VIP':
+        if tipo_instrumento == 'INDICES':
+            return (spread_full+spread_diff)/100
+        else:
+            return spread_full+spread_diff
+
+
 def func_ponderacion(spread_full, spread_diff, spread_categoria):
-    #Calcula las Ponderaciones Pro y Categoria (que siempre son las mismas)
+    #todo - REVISAR
+    #Calcula las Ponderaciones PREMIUM y VIP (que siempre son las mismas)
     if (spread_full-spread_diff) > 0:
-        ponderacion = round(spread_categoria/spread_full,3)
+        return round(spread_categoria/(spread_full if spread_full != 0 else spread_full+0.000000001),3)
     else:
-        ponderacion = spread_full  
-    return ponderacion
+        return spread_full  
 
 #^ OTROS
 def func_mes_fiscal(fecha_consultada):
