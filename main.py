@@ -4,9 +4,9 @@ from calculos import *
 from datetime import datetime # para trabajar con fechas
 from time import time as crono # cronometro
 
-#fecha_consultada = datetime.now().date()
-fecha_consultada = '2024-03-20'
-fecha_consultada = datetime.strptime(fecha_consultada, "%Y-%m-%d").date()
+fecha_consultada = datetime.now().date()
+# fecha_consultada = '2024-03-16'
+# fecha_consultada = datetime.strptime(fecha_consultada, "%Y-%m-%d").date()
 nombre_dia_semana = fecha_consultada.strftime("%A")
 numero_dia_semana  = fecha_consultada.weekday() + 1 # 1 para Lunes / 7 para Domingo
 
