@@ -297,6 +297,7 @@ def func_sel_monto_moneda_usd(conexion, fecha_consultada):
         return monto_moneda_a_usd
     
 
+#! BORRAR 1
 def func_sel_instrumentos_old_historical(conexion, instrumentos_faltantes, fecha_consultada):
     # Obtiene los instrumentods de la base de datos de la tabla py_rp_ponderacionxsymbol_historical
     def func_fecha_maxima_historical(conexion):
@@ -363,7 +364,8 @@ def func_sel_instrumentos_old_historical(conexion, instrumentos_faltantes, fecha
             }
         
     return viejas_ponderaciones
-
+#! FIN BORRAR 1
+#! BORRAR 3
 def func_sel_instrumentos_old_update(conexion, instrumentos_faltantes):
     # Obtiene los instrumentods de la base de datos de la tabla python_extract.py_rp_ponderacionxsymbol_update_fiscal
     cursor = conexion.cursor()
@@ -430,7 +432,7 @@ def func_sel_instrumentos_old_update(conexion, instrumentos_faltantes):
             }
         
     return viejas_ponderaciones
-
+#! FIN BORRAR 3
 
 def func_sel_grupos_reales(conexion):
     # Obtiene los IDs de grupos, el nombre de grupo y la categoria de mt5_groups
@@ -581,8 +583,6 @@ def func_upd_path_grupo(conexion, llenado_path_grupo):
         
 
 def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
-    # inserta en la tabla python_extract.py_rp_ponderacionxsymbol_historical
-
     if len(nuevas_ponderaciones) >= 1:
         new_ponderaciones_insert_historic = list()
         for codigo in nuevas_ponderaciones:
@@ -606,7 +606,6 @@ def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
                 nuevas_ponderaciones[codigo]['fecha_insercion_registro']
             ]
             new_ponderaciones_insert_historic.append(tuple(datos))
-    #print(new_ponderaciones_insert_historic)
             
         cursor = conexion.cursor()
         
@@ -643,70 +642,73 @@ def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
         conexion.commit()
         cursor.close()
         
-
-def func_ins_datos_ponderados(conexion, insert):
-    # inserta en reports.rp_ponderacionxsymbol_python_update
-    if len(insert) >= 1:
-        new_ponderaciones_insert = list()
-        for codigo in insert:
-            datos = [
-                codigo,
-                insert[codigo]['instrumento'],
-                insert[codigo]['tipo_instrumento'],
-                insert[codigo]['tipo'],
-                insert[codigo]['categoria'],
-                insert[codigo]['precio'],
-                insert[codigo]['tamano_contrato'],
-                insert[codigo]['moneda_calculo'],
-                insert[codigo]['monto_usd'],
-                insert[codigo]['spread_categoria'],
-                insert[codigo]['spread_diff_categoria'],
-                insert[codigo]['ponderacion_categoria'],
-                insert[codigo]['path_instrumento'],
-                insert[codigo]['path_grupo'],
-                insert[codigo]['grupos_id'],
-                insert[codigo]['fecha_insercion_precio'],
-                insert[codigo]['fecha_insercion_registro']
-            ]
-            new_ponderaciones_insert.append(tuple(datos))
-        
-        cursor = conexion.cursor()
-        
-        rp_ponderacionxsymbol_python = (
-        """
-        INSERT INTO
-        python_extract.py_rp_ponderacionxsymbol_update_fiscal
-        (
+#! BORRAR 4
+def func_ins_datos_ponderados(conexion, update):
+    cursor = conexion.cursor()    
+    query_truncate = "truncate table python_extract.py_rp_ponderacionxsymbol_update_fiscal"
+    cursor.execute(query_truncate)
+    conexion.commit()
+    
+    new_ponderaciones_update = list()
+    for codigo in update:
+        datos = [
             codigo,
-            instrumento,
-            tipo_instrumento,
-            tipo,
-            categoria,
-            precio,
-            tamano_contrato,
-            moneda_calculo,
-            monto_usd,
-            spread_categoria,
-            spread_diff_categoria,
-            ponderacion_categoria,
-            path_instrumento,
-            path_grupo,
-            grupos_id,
-            fecha_insercion_precio,
-            fecha_insercion_registro
-        )
-        VALUES
-        (
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-        )
-        """)
+            update[codigo]['instrumento'],
+            update[codigo]['tipo_instrumento'],
+            update[codigo]['tipo'],
+            update[codigo]['categoria'],
+            update[codigo]['precio'],
+            update[codigo]['tamano_contrato'],
+            update[codigo]['moneda_calculo'],
+            update[codigo]['monto_usd'],
+            update[codigo]['spread_categoria'],
+            update[codigo]['spread_diff_categoria'],
+            update[codigo]['ponderacion_categoria'],
+            update[codigo]['path_instrumento'],
+            update[codigo]['path_grupo'],
+            update[codigo]['grupos_id'],
+            update[codigo]['fecha_insercion_precio'],
+            update[codigo]['fecha_insercion_registro']
+        ]
+        new_ponderaciones_update.append(tuple(datos))
+    
+    cursor = conexion.cursor()
+    
+    rp_ponderacionxsymbol_python = (
+    """
+    INSERT INTO
+    python_extract.py_rp_ponderacionxsymbol_update_fiscal
+    (
+        codigo,
+        instrumento,
+        tipo_instrumento,
+        tipo,
+        categoria,
+        precio,
+        tamano_contrato,
+        moneda_calculo,
+        monto_usd,
+        spread_categoria,
+        spread_diff_categoria,
+        ponderacion_categoria,
+        path_instrumento,
+        path_grupo,
+        grupos_id,
+        fecha_insercion_precio,
+        fecha_insercion_registro
+    )
+    VALUES
+    (
+        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+    )
+    """)
 
-        cursor.executemany(rp_ponderacionxsymbol_python,new_ponderaciones_insert)
-        conexion.commit()
-        cursor.close()
-#^ FIN INSERT
+    cursor.executemany(rp_ponderacionxsymbol_python,new_ponderaciones_update)
+    conexion.commit()
+    cursor.close()
+#! FIN BORRAR 4
 
-#~ UPDATE
+
 def func_upd_path_instrumento(conexion, update):
     # Actualiza el "path instrumento" en python_extract.py_rp_ponderaciones_path
     if len(update) >= 1:
@@ -727,10 +729,8 @@ def func_upd_path_instrumento(conexion, update):
         conexion.commit()
     #conexion.close()
 
-
-def func_upd_datos_ponderados(conexion, update):
-    # actualiza en reports.rp_ponderacionxsymbol_python_update
-    
+#! BORRAR 5
+def func_upd_datos_ponderados(conexion, update):    
     if len(update) >= 1:
         new_ponderaciones_update = list()
         for codigo in update:
@@ -784,4 +784,4 @@ def func_upd_datos_ponderados(conexion, update):
 
         conexion.commit()
         conexion.close()
-#~ FIN UPDATE
+#! BORRAR 5

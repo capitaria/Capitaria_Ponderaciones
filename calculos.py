@@ -189,7 +189,7 @@ def func_actualiza_path_instrumentos(instrumentos_mt5,instrumentos_path):
             
     return insert, update, no_update
 
-
+#! BORRAR 2
 def func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones):
     # va a buscar los nuevos instrumentos para ver si estan en la tabla, en caso de que esten va a recorrer los campos y ve si alguno cambio, para entonces actualizar, si no, no hay cambios, no actualizara el instrumento
     update = dict()
@@ -215,7 +215,7 @@ def func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones):
             insert.update({codigo:nuevas_ponderaciones[codigo]})
             
     return insert, update, no_update
-
+#! FIN BORRAR 2
 
 def func_grupos_y_simbolos(grupos_reales,grupos_simbolos):
     #Une los grupos reales con los grupos de cada simbolo
