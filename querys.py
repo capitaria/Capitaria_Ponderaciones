@@ -153,7 +153,7 @@ def func_sel_instrumentos_faltantes(conexion, fecha_consultada):
                     python_extract.py_rp_ponderaciones_path ppp
                 where
                     ppp.path_grupo not in ('START\*','Provisorios\*','*','MarketExecution\*','Alimentadores\*','Acc Chile\*')
-                    -- and ppp.instrumento = 'USDCLP'
+                    and ppp.instrumento = 'USDMXN'
             )
     """
     
@@ -193,7 +193,7 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
         ms."SwapLong" as swap_compra,
         ms."SwapShort" as swap_venta
     from
-        mt5_symbols ms inner join reports.py_rp_ponderaciones_path rpp
+        mt5_symbols ms inner join python_extract.py_rp_ponderaciones_path rpp
         on ms."Symbol" = rpp.instrumento
     where
         ms."Symbol" in {tuple([x for x in instrumentos_faltantes]) if len([x for x in instrumentos_faltantes]) > 1 else f"('{[x for x in instrumentos_faltantes][0]}')"}
