@@ -153,7 +153,7 @@ def func_sel_instrumentos_faltantes(conexion, fecha_consultada):
                     python_extract.py_rp_ponderaciones_path ppp
                 where
                     ppp.path_grupo not in ('START\*','Provisorios\*','*','MarketExecution\*','Alimentadores\*','Acc Chile\*')
-                    and ppp.instrumento = 'USDMXN'
+                    and ppp.instrumento = '#AAPL'
             )
     """
     
@@ -458,6 +458,7 @@ def func_sel_grupos_reales(conexion):
         and mg."Group" not ilike '%sta%'
         and mg."Group" not ilike '%ins%mesa%'
         and mg."Group" not like '%99'
+        and mg."Group_ID" in (381,369) -- COMENTAR
     group by
         mg."Group_ID",
         mg."Group",
@@ -507,6 +508,7 @@ def func_sel_grupos_simbolos(conexion):
             and mg."Group" not ilike '%sta%'
             and mg."Group" not ilike '%ins%mesa%'
             and mg."Group" not like '%99' -- COMENTAR
+            and mgs."Group_ID" in (381,369) -- COMENTAR
         group by
             mg."Group_ID"
         having

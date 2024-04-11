@@ -263,18 +263,10 @@ def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupaci
     nuevas_ponderaciones2 = dict()
     for instrumento in nuevas_ponderaciones:
         path_grupo = nuevas_ponderaciones[instrumento]['path_grupo'] #* CFD Commodities\Spot\WTI
-        for lista in agrupacion: #* lista -> ['FUL', 'Forex\\Minors\\USDCOP', 100, [361]]
-            #if path_grupo == lista[1] or path_grupo[:path_grupo.find(" ")] in lista[1] or path_grupo[:path_grupo.find("\\")] in lista[1]:
-            if path_grupo == lista[1] or path_grupo[:path_grupo.find("*")-1]+'*' in lista[1] or path_grupo[:path_grupo.find(" ")]+'*' in lista[1]:
-                # print(instrumento, lista[0],nuevas_ponderaciones[instrumento]['spread_full'],lista[2])
-                # breakpoint()
+        for lista in agrupacion: #* lista -> ['FUL', 'Forex\\Minors\\USDCOP', 100, [361]]            
+            if path_grupo == lista[1] or path_grupo[:path_grupo.find('*')-1]+'*' in lista[1] or path_grupo[:path_grupo.find(' ')]+'*' in lista[1]:
+                print(f"IF:{lista[3]} {path_grupo} = {lista[1]} or {path_grupo[:path_grupo.find('*')-1]+'*'} in {lista[1]} or {path_grupo[:path_grupo.find(' ')]+'*'} in {lista[1]}")
                 key = instrumento+lista[0]+str(lista[2])
-                # key = instrumento+lista[0]+str(
-                #         nuevas_ponderaciones[instrumento]['spread_full'] if lista[0] == 'FUL'
-                #         else nuevas_ponderaciones[instrumento]['spread_full'] + lista[2] if lista[0] == 'PRE'
-                #         else nuevas_ponderaciones[instrumento]['spread_full'] + lista[2] if lista[0] == 'VIP'
-                #         else 'X'
-                #         #else nuevas_ponderaciones[instrumento]['spread_full'])
                 nuevas_ponderaciones2[key] = {
                     'instrumento' : instrumento,
                     'tipo_instrumento' : nuevas_ponderaciones[instrumento]['tipo_instrumento'],
@@ -298,7 +290,9 @@ def func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupaci
                     'fecha_insercion_precio' : nuevas_ponderaciones[instrumento]['fecha_insercion_precio'],
                     'fecha_insercion_registro' : nuevas_ponderaciones[instrumento]['fecha_insercion_registro']
                 }
-            
+            else:
+                print(f"ELSE:{lista[3]} {path_grupo} = {lista[1]} or {path_grupo[:path_grupo.find('*')-1]+'*'} in {lista[1]} or {path_grupo[:path_grupo.find(' ')]+'*'} in {lista[1]}")
+                
     return nuevas_ponderaciones2
 
 
