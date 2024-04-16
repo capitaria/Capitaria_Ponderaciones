@@ -41,20 +41,16 @@ if numero_dia_semana <= 5:
             nuevas_ponderaciones = func_ponderaciones_campos_calculados(nuevas_ponderaciones,instrumentos_faltantes,monto_moneda_a_usd)
             
             #^ Crea las agrupaciones en base a la union de los grupos reales y los grupos de simbolos
-            grupos_reales = func_sel_grupos_reales(conexion)
-            grupos_simbolos = func_sel_grupos_simbolos(conexion)
+            grupos_reales = func_sel_grupos_reales(conexion) #& modificar grupos
+            grupos_simbolos = func_sel_grupos_simbolos(conexion) #& modificar grupos
             grupos = func_grupos_y_simbolos(grupos_reales,grupos_simbolos)
             agrupacion = func_agrupacion_categoria(grupos)   
 
             #^ Junta las Nuevas Ponderaciones con la Agrupacion dejando un Codigo unico
             nuevas_ponderaciones = func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupacion)
-            #todo - BUSCAR ESTA LINEA EN EL PRINT
-            #todo - ELSE:[381] CFD Acciones\EEUU\#AAPL = CFD Acciones\EEUU\* or CFD Acciones\EEUU\#AA* in CFD Acciones\EEUU\* or CFD* in CFD Acciones\EEUU\*
-            #todo - Ver que  = CFD Acciones\EEUU\* este contenida en lista[1]
-            breakpoint()
             
             #^ Inserta (tabla historica) y Actualiza (tabla mensual) en la Base de Datos
-            func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones) #* insert PSQL
+            #func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones) #* insert PSQL
             if fecha_consultada == fecha_prox_mes_fiscal_correcta: #todo Se actualiza los cierres de mes
                 func_ins_datos_ponderados(conexion, nuevas_ponderaciones)
                 #// viejas_ponderaciones = func_sel_instrumentos_old_historical(conexion, instrumentos_faltantes, fecha_consultada) #! BORRAR 1
