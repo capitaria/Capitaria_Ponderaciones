@@ -115,7 +115,6 @@ def func_ponderaciones_campos_no_calculados(ponderacion_base):
 
     for instrumento in ponderacion_base:
         nuevas_ponderaciones[instrumento] = {}
-
         for key, valor in ponderacion_base[instrumento].items():
             if key == 'path_instrumento':
                 nuevas_ponderaciones[instrumento]['path_instrumento'] = valor
@@ -124,7 +123,10 @@ def func_ponderaciones_campos_no_calculados(ponderacion_base):
             elif key == 'tamanio_1_lote':
                 nuevas_ponderaciones[instrumento]['tamano_contrato'] = valor
             elif key == 'moneda_base':
-                nuevas_ponderaciones[instrumento]['moneda_calculo'] = valor
+                if 'criptomonedas' in nuevas_ponderaciones[instrumento]['path_grupo'].lower():
+                    nuevas_ponderaciones[instrumento]['moneda_calculo'] = 'USD'
+                else:
+                    nuevas_ponderaciones[instrumento]['moneda_calculo'] = valor
             elif key == 'spread_full':
                 nuevas_ponderaciones[instrumento]['spread_full'] = int(valor)
 

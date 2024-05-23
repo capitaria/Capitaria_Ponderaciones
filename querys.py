@@ -153,7 +153,7 @@ def func_sel_instrumentos_faltantes(conexion, fecha_consultada):
                     python_extract.py_rp_ponderaciones_path ppp
                 where
                     ppp.path_grupo not in ('START\*','Provisorios\*','*','MarketExecution\*','Alimentadores\*','Acc Chile\*')
-                    -- and ppp.instrumento in ('USDCOP')
+                    -- ppp.instrumento in ('BTCUSD', 'LTCUSD', 'ETHUSD')
             )
     """
     
