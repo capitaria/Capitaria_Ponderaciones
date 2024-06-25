@@ -151,9 +151,9 @@ def func_sel_instrumentos_faltantes(conexion, fecha_consultada):
                     ppp.instrumento
                 from
                     python_extract.py_rp_ponderaciones_path ppp
-                where
-                    ppp.path_grupo not in ('START\*','Provisorios\*','*','MarketExecution\*','Alimentadores\*','Acc Chile\*')
-                    -- ppp.instrumento in ('BTCUSD', 'LTCUSD', 'ETHUSD')
+                -- where
+                    -- ppp.path_grupo not in ('START\*','Provisorios\*','*','MarketExecution\*','Alimentadores\*','Acc Chile\*')
+                    -- instrumento like '%AUDUSD%'
             )
     """
     
@@ -197,11 +197,11 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
         on ms."Symbol" = rpp.instrumento
     where
         ms."Symbol" in {tuple([x for x in instrumentos_faltantes]) if len([x for x in instrumentos_faltantes]) > 1 else f"('{[x for x in instrumentos_faltantes][0]}')"}
-        and ms."Path" not ilike '%historicos%'
-        and ms."Path" not ilike '%start%'
-        and ms."Path" not ilike '%Alimentadores%'
-        and ms."Path" not ilike '%Provisorios%'
-        and ms."Path" not ilike '%MarketExecution%'
+        -- and ms."Path" not ilike '%historicos%'
+        -- and ms."Path" not ilike '%start%'
+        -- and ms."Path" not ilike '%Alimentadores%'
+        -- and ms."Path" not ilike '%Provisorios%'
+        -- and ms."Path" not ilike '%MarketExecution%'
         -- and ms."Symbol" not in ('USDCLP', 'USDCLPabr24', 'USDCLPmar24', 'USDCLPmay24', 'USDCOP')
 """
 
@@ -297,142 +297,7 @@ def func_sel_monto_moneda_usd(conexion, fecha_consultada):
         return monto_moneda_a_usd
     
 
-#! BORRAR 1
-def func_sel_instrumentos_old_historical(conexion, instrumentos_faltantes, fecha_consultada):
-    # Obtiene los instrumentods de la base de datos de la tabla py_rp_ponderacionxsymbol_historical
-    def func_fecha_maxima_historical(conexion):
-        # Obitiene la fecha Maxima de la insercion de la tabla py_rp_ponderacionxsymbol_historical
-        cursor = conexion.cursor()
-        query_fecha_max = f"""(
-            select
-                max(fecha_insercion_registro)::date
-            from
-                reports.py_rp_ponderacionxsymbol_historical prph
-            where
-                fecha_insercion_registro::date < '{fecha_consultada}'
-        )"""
-        cursor.execute(query_fecha_max)
-        fecha_max = cursor.fetchall()
-        return fecha_max
-    
-    fecha_maxima = func_fecha_maxima_historical(conexion)
-    fecha_maxima = fecha_maxima[0][0]
-    fecha_maxima = fecha_maxima.strftime("%Y-%m-%d") if fecha_maxima is not None else '1987-10-24'
-    
-    cursor = conexion.cursor()
-    query_instrumentos_old = f"""
-    select 
-        codigo,
-        precio,
-        tamano_contrato,
-        coalesce(monto_usd,0) as monto_usd,
-        spread_categoria,
-        ponderacion_categoria,
-        path_instrumento,
-        path_grupo,
-        grupos_id
-    from 
-        reports.py_rp_ponderacionxsymbol_historical
-    where
-        fecha_insercion_registro::date = '{fecha_maxima}'
-        and instrumento in {tuple([x for x in instrumentos_faltantes]) if len([x for x in instrumentos_faltantes]) > 1 else f"('{[x for x in instrumentos_faltantes][0]}')"}
-    """
-    cursor.execute(query_instrumentos_old)
-    old_instrumentos = cursor.fetchall()
 
-    viejas_ponderaciones = dict()
-    
-    for item in old_instrumentos:
-        codigo = item[0]
-        precio = item[1]
-        tamano_contrato = item[2]
-        monto_usd = item[3]
-        spread_categoria = item[4]
-        ponderacion_categoria = item[5]
-        path_instrumento = item[6]
-        path_grupo = item[7]
-        grupos_id = item[8]
-        viejas_ponderaciones[codigo] = {
-            'precio' : round(precio,4),
-            'tamano_contrato' : int(tamano_contrato),
-            'monto_usd' : round(monto_usd,4),
-            'spread_categoria' : round(spread_categoria,4),
-            'ponderacion_categoria': round(ponderacion_categoria,4),
-            'path_instrumento' : path_instrumento,
-            'path_grupo' : path_grupo,
-            'grupos_id' : grupos_id
-            }
-        
-    return viejas_ponderaciones
-#! FIN BORRAR 1
-#! BORRAR 3
-def func_sel_instrumentos_old_update(conexion, instrumentos_faltantes):
-    # Obtiene los instrumentods de la base de datos de la tabla python_extract.py_rp_ponderacionxsymbol_update_fiscal
-    cursor = conexion.cursor()
-    query_instrumentos_old = f"""
-        select
-            codigo,
-            instrumento,
-            tipo_instrumento,
-            tipo,
-            categoria,
-            precio,
-            tamano_contrato,
-            moneda_calculo,
-            coalesce(monto_usd,0) as monto_usd,
-            spread_categoria,
-            spread_diff_categoria,
-            ponderacion_categoria,
-            path_instrumento,
-            path_grupo,
-            grupos_id,
-            fecha_insercion_precio,
-            fecha_insercion_registro
-        from 
-            python_extract.py_rp_ponderacionxsymbol_update_fiscal pppu
-        where
-            pppu.instrumento in {tuple([x for x in instrumentos_faltantes]) if len([x for x in instrumentos_faltantes]) > 1 else f"('{[x for x in instrumentos_faltantes][0]}')"}
-    """
-    cursor.execute(query_instrumentos_old)
-    old_instrumentos = cursor.fetchall()
-
-    viejas_ponderaciones = dict()
-    
-    for item in old_instrumentos:
-        codigo = item[0]
-        instrumento = item[1]
-        tipo_instrumento = item[2]
-        tipo = item[3]
-        categoria = item[4]
-        precio = item[5]
-        tamano_contrato = item[6]
-        moneda_calculo = item[7]
-        monto_usd = item[8]
-        spread_categoria = item[9]
-        spread_diff_categoria = item[10]
-        ponderacion_categoria = item[11]
-        path_instrumento = item[12]
-        path_grupo = item[13]
-        grupos_id = item[14]
-        viejas_ponderaciones[codigo] = {
-            'instrumento' : instrumento,
-            'tipo_instrumento' : tipo_instrumento,
-            'tipo' : tipo,
-            'categoria' : categoria,
-            'precio' : round(precio,4),
-            'tamano_contrato' : int(tamano_contrato),
-            'moneda_calculo' : moneda_calculo,
-            'monto_usd' : round(monto_usd,4),
-            'spread_categoria' : round(spread_categoria,4),
-            'spread_diff_categoria' : round(spread_diff_categoria,4),
-            'ponderacion_categoria': round(ponderacion_categoria,4),
-            'path_instrumento' : path_instrumento,
-            'path_grupo' : path_grupo,
-            'grupos_id' : grupos_id
-            }
-        
-    return viejas_ponderaciones
-#! FIN BORRAR 3
 
 def func_sel_grupos_reales(conexion):
     # Obtiene los IDs de grupos, el nombre de grupo y la categoria de mt5_groups
@@ -645,7 +510,7 @@ def func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones):
         conexion.commit()
         cursor.close()
         
-#! BORRAR 4
+
 def func_ins_datos_ponderados(conexion, update):
     cursor = conexion.cursor()    
     query_truncate = "truncate table python_extract.py_rp_ponderacionxsymbol_update_fiscal"
@@ -709,7 +574,6 @@ def func_ins_datos_ponderados(conexion, update):
     cursor.executemany(rp_ponderacionxsymbol_python,new_ponderaciones_update)
     conexion.commit()
     cursor.close()
-#! FIN BORRAR 4
 
 
 def func_upd_path_instrumento(conexion, update):
@@ -730,61 +594,268 @@ def func_upd_path_instrumento(conexion, update):
             cursor.execute(query_update_path, (valor, clave))
         
         conexion.commit()
-    #conexion.close()
 
-#! BORRAR 5
-def func_upd_datos_ponderados(conexion, update):    
-    if len(update) >= 1:
-        new_ponderaciones_update = list()
-        for codigo in update:
-            datos = (
-                update[codigo]['instrumento'],
-                update[codigo]['tipo_instrumento'],
-                update[codigo]['tipo'],
-                update[codigo]['categoria'],
-                update[codigo]['precio'],
-                update[codigo]['tamano_contrato'],
-                update[codigo]['moneda_calculo'],
-                update[codigo]['monto_usd'],
-                update[codigo]['spread_categoria'],
-                update[codigo]['spread_diff_categoria'],
-                update[codigo]['ponderacion_categoria'],
-                update[codigo]['path_instrumento'],
-                update[codigo]['path_grupo'],
-                update[codigo]['grupos_id'],
-                update[codigo]['fecha_insercion_precio'],
-                update[codigo]['fecha_insercion_registro'],
-                codigo
-            )
-            new_ponderaciones_update.append(datos)
+
+def func_ins_datos_ponderados_diarios(conexion, update):
+    cursor = conexion.cursor()    
+    query_truncate = "truncate table python_extract.py_rp_ponderacionxsymbol"
+    cursor.execute(query_truncate)
+    conexion.commit()
     
-        query_update = (
-        f"""
-        update python_extract.py_rp_ponderacionxsymbol_update_fiscal
-        set
-            instrumento = %s
-            tipo_instrumento = %s
-            tipo = %s
-            categoria = %s
-            precio = %s
-            tamano_contrato = %s
-            moneda_calculo = %s
-            monto_usd = %s
-            spread_categoria = %s
-            spread_diff_categoria = %s
-            ponderacion_categoria = %s
-            path_instrumento = %s
-            path_grupo = %s
-            grupos_id = %s
-            fecha_insercion_precio = %s
-            fecha_insercion_registro = %s
-        where
-            codigo = %s
-        """)
+    new_ponderaciones_update = list()
+    for codigo in update:
+        datos = [
+            codigo,
+            update[codigo]['instrumento'],
+            update[codigo]['tipo_instrumento'],
+            update[codigo]['tipo'],
+            update[codigo]['categoria'],
+            update[codigo]['precio'],
+            update[codigo]['tamano_contrato'],
+            update[codigo]['moneda_calculo'],
+            update[codigo]['monto_usd'],
+            update[codigo]['spread_categoria'],
+            update[codigo]['spread_diff_categoria'],
+            update[codigo]['ponderacion_categoria'],
+            update[codigo]['path_instrumento'],
+            update[codigo]['path_grupo'],
+            update[codigo]['grupos_id'],
+            update[codigo]['fecha_insercion_precio'],
+            update[codigo]['fecha_insercion_registro']
+        ]
+        new_ponderaciones_update.append(tuple(datos))
+    
+    cursor = conexion.cursor()
+    
+    rp_ponderacionxsymbol_python = (
+    """
+    INSERT INTO
+    python_extract.py_rp_ponderacionxsymbol
+    (
+        codigo,
+        instrumento,
+        tipo_instrumento,
+        tipo,
+        categoria,
+        precio,
+        tamano_contrato,
+        moneda_calculo,
+        monto_usd,
+        spread_categoria,
+        spread_diff_categoria,
+        ponderacion_categoria,
+        path_instrumento,
+        path_grupo,
+        grupos_id,
+        fecha_insercion_precio,
+        fecha_insercion_registro
+    )
+    VALUES
+    (
+        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+    )
+    """)
 
-        cursor = conexion.cursor()
-        cursor.executemany(query_update, tuple(new_ponderaciones_update))
+    cursor.executemany(rp_ponderacionxsymbol_python,new_ponderaciones_update)
+    conexion.commit()
+    cursor.close()
+    
+    
+    
+    
+    
+    
+    
+    
+    
+#! OBSOLETO
+# def func_upd_datos_ponderados(conexion, update):    
+#     if len(update) >= 1:
+#         new_ponderaciones_update = list()
+#         for codigo in update:
+#             datos = (
+#                 update[codigo]['instrumento'],
+#                 update[codigo]['tipo_instrumento'],
+#                 update[codigo]['tipo'],
+#                 update[codigo]['categoria'],
+#                 update[codigo]['precio'],
+#                 update[codigo]['tamano_contrato'],
+#                 update[codigo]['moneda_calculo'],
+#                 update[codigo]['monto_usd'],
+#                 update[codigo]['spread_categoria'],
+#                 update[codigo]['spread_diff_categoria'],
+#                 update[codigo]['ponderacion_categoria'],
+#                 update[codigo]['path_instrumento'],
+#                 update[codigo]['path_grupo'],
+#                 update[codigo]['grupos_id'],
+#                 update[codigo]['fecha_insercion_precio'],
+#                 update[codigo]['fecha_insercion_registro'],
+#                 codigo
+#             )
+#             new_ponderaciones_update.append(datos)
+    
+#         query_update = (
+#         f"""
+#         update python_extract.py_rp_ponderacionxsymbol_update_fiscal
+#         set
+#             instrumento = %s
+#             tipo_instrumento = %s
+#             tipo = %s
+#             categoria = %s
+#             precio = %s
+#             tamano_contrato = %s
+#             moneda_calculo = %s
+#             monto_usd = %s
+#             spread_categoria = %s
+#             spread_diff_categoria = %s
+#             ponderacion_categoria = %s
+#             path_instrumento = %s
+#             path_grupo = %s
+#             grupos_id = %s
+#             fecha_insercion_precio = %s
+#             fecha_insercion_registro = %s
+#         where
+#             codigo = %s
+#         """)
 
-        conexion.commit()
-        conexion.close()
-#! BORRAR 5
+#         cursor = conexion.cursor()
+#         cursor.executemany(query_update, tuple(new_ponderaciones_update))
+
+#         conexion.commit()
+#         conexion.close()
+
+
+# def func_sel_instrumentos_old_historical(conexion, instrumentos_faltantes, fecha_consultada):
+#     # Obtiene los instrumentods de la base de datos de la tabla py_rp_ponderacionxsymbol_historical
+#     def func_fecha_maxima_historical(conexion):
+#         # Obitiene la fecha Maxima de la insercion de la tabla py_rp_ponderacionxsymbol_historical
+#         cursor = conexion.cursor()
+#         query_fecha_max = f"""(
+#             select
+#                 max(fecha_insercion_registro)::date
+#             from
+#                 reports.py_rp_ponderacionxsymbol_historical prph
+#             where
+#                 fecha_insercion_registro::date < '{fecha_consultada}'
+#         )"""
+#         cursor.execute(query_fecha_max)
+#         fecha_max = cursor.fetchall()
+#         return fecha_max
+    
+#     fecha_maxima = func_fecha_maxima_historical(conexion)
+#     fecha_maxima = fecha_maxima[0][0]
+#     fecha_maxima = fecha_maxima.strftime("%Y-%m-%d") if fecha_maxima is not None else '1987-10-24'
+    
+#     cursor = conexion.cursor()
+#     query_instrumentos_old = f"""
+#     select 
+#         codigo,
+#         precio,
+#         tamano_contrato,
+#         coalesce(monto_usd,0) as monto_usd,
+#         spread_categoria,
+#         ponderacion_categoria,
+#         path_instrumento,
+#         path_grupo,
+#         grupos_id
+#     from 
+#         reports.py_rp_ponderacionxsymbol_historical
+#     where
+#         fecha_insercion_registro::date = '{fecha_maxima}'
+#         and instrumento in {tuple([x for x in instrumentos_faltantes]) if len([x for x in instrumentos_faltantes]) > 1 else f"('{[x for x in instrumentos_faltantes][0]}')"}
+#     """
+#     cursor.execute(query_instrumentos_old)
+#     old_instrumentos = cursor.fetchall()
+
+#     viejas_ponderaciones = dict()
+    
+#     for item in old_instrumentos:
+#         codigo = item[0]
+#         precio = item[1]
+#         tamano_contrato = item[2]
+#         monto_usd = item[3]
+#         spread_categoria = item[4]
+#         ponderacion_categoria = item[5]
+#         path_instrumento = item[6]
+#         path_grupo = item[7]
+#         grupos_id = item[8]
+#         viejas_ponderaciones[codigo] = {
+#             'precio' : round(precio,4),
+#             'tamano_contrato' : int(tamano_contrato),
+#             'monto_usd' : round(monto_usd,4),
+#             'spread_categoria' : round(spread_categoria,4),
+#             'ponderacion_categoria': round(ponderacion_categoria,4),
+#             'path_instrumento' : path_instrumento,
+#             'path_grupo' : path_grupo,
+#             'grupos_id' : grupos_id
+#             }
+        
+#     return viejas_ponderaciones
+
+
+# def func_sel_instrumentos_old_update(conexion, instrumentos_faltantes):
+#     # Obtiene los instrumentods de la base de datos de la tabla python_extract.py_rp_ponderacionxsymbol_update_fiscal
+#     cursor = conexion.cursor()
+#     query_instrumentos_old = f"""
+#         select
+#             codigo,
+#             instrumento,
+#             tipo_instrumento,
+#             tipo,
+#             categoria,
+#             precio,
+#             tamano_contrato,
+#             moneda_calculo,
+#             coalesce(monto_usd,0) as monto_usd,
+#             spread_categoria,
+#             spread_diff_categoria,
+#             ponderacion_categoria,
+#             path_instrumento,
+#             path_grupo,
+#             grupos_id,
+#             fecha_insercion_precio,
+#             fecha_insercion_registro
+#         from 
+#             python_extract.py_rp_ponderacionxsymbol_update_fiscal pppu
+#         where
+#             pppu.instrumento in {tuple([x for x in instrumentos_faltantes]) if len([x for x in instrumentos_faltantes]) > 1 else f"('{[x for x in instrumentos_faltantes][0]}')"}
+#     """
+#     cursor.execute(query_instrumentos_old)
+#     old_instrumentos = cursor.fetchall()
+
+#     viejas_ponderaciones = dict()
+    
+#     for item in old_instrumentos:
+#         codigo = item[0]
+#         instrumento = item[1]
+#         tipo_instrumento = item[2]
+#         tipo = item[3]
+#         categoria = item[4]
+#         precio = item[5]
+#         tamano_contrato = item[6]
+#         moneda_calculo = item[7]
+#         monto_usd = item[8]
+#         spread_categoria = item[9]
+#         spread_diff_categoria = item[10]
+#         ponderacion_categoria = item[11]
+#         path_instrumento = item[12]
+#         path_grupo = item[13]
+#         grupos_id = item[14]
+#         viejas_ponderaciones[codigo] = {
+#             'instrumento' : instrumento,
+#             'tipo_instrumento' : tipo_instrumento,
+#             'tipo' : tipo,
+#             'categoria' : categoria,
+#             'precio' : round(precio,4),
+#             'tamano_contrato' : int(tamano_contrato),
+#             'moneda_calculo' : moneda_calculo,
+#             'monto_usd' : round(monto_usd,4),
+#             'spread_categoria' : round(spread_categoria,4),
+#             'spread_diff_categoria' : round(spread_diff_categoria,4),
+#             'ponderacion_categoria': round(ponderacion_categoria,4),
+#             'path_instrumento' : path_instrumento,
+#             'path_grupo' : path_grupo,
+#             'grupos_id' : grupos_id
+#             }
+        
+#     return viejas_ponderaciones

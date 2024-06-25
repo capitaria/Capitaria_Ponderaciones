@@ -57,6 +57,7 @@ def func_tipo(path):
 
 
 def func_monto_usd(moneda, monto_a_usd):
+
     # Calcula el valor del instrumento por dolar transado
     if moneda == 'CLP':
         for key, valor in monto_a_usd.items(): #key: usdclp / valor: 868.35
@@ -177,8 +178,6 @@ def func_actualiza_path_instrumentos(instrumentos_mt5,instrumentos_path):
         if instrumento in instrumentos_path: # Si el "instrumento de MT5" esta en los "instrumentos de BDD (ponderaciones path)"
             if instrumentos_mt5[instrumento]['path_instrumento'] != instrumentos_path[instrumento]['path_instrumento']: # Si el "Path Instrumento" de MT5 es distinto al "Path Instrumento" de la BDD
                 update.append([instrumento,instrumentos_mt5[instrumento]['path_instrumento']])
-            # elif instrumentos_path[instrumento]['path_instrumento'][0:instrumentos_path[instrumento]['path_instrumento'].find("\\")] == 'Provisorios' and instrumentos_path[instrumento]['path_grupo'] is None: # Si en el path instrumento la variable es Provisorio y ademas el path grupo es None, que actualice
-            #     update.append([instrumento,instrumentos_path[instrumento]['path_instrumento']])
             elif instrumentos_path[instrumento]['path_instrumento'][0:instrumentos_path[instrumento]['path_instrumento'].find("\\")] == 'Historicos' and instrumentos_path[instrumento]['path_grupo'] == '*': # Si el grupo instrumento "inicia en Historico" y el grupo path tiene "*", no actualiza 
                 no_update.append([instrumento,instrumentos_path[instrumento]['path_instrumento']])
             elif instrumentos_path[instrumento]['path_grupo'] is not None: # si el path grupo NO viene vacio
@@ -191,33 +190,6 @@ def func_actualiza_path_instrumentos(instrumentos_mt5,instrumentos_path):
             
     return insert, update, no_update
 
-#! BORRAR 2
-def func_actualiza_ponderaciones(viejas_ponderaciones,nuevas_ponderaciones):
-    # va a buscar los nuevos instrumentos para ver si estan en la tabla, en caso de que esten va a recorrer los campos y ve si alguno cambio, para entonces actualizar, si no, no hay cambios, no actualizara el instrumento
-    update = dict()
-    no_update = dict()
-    insert = dict()
-
-    
-    for codigo in nuevas_ponderaciones:
-        if codigo in viejas_ponderaciones:
-            if (viejas_ponderaciones[codigo]['precio'] != nuevas_ponderaciones[codigo]['precio']
-                or viejas_ponderaciones[codigo]['spread_categoria'] != nuevas_ponderaciones[codigo]['spread_categoria']
-                #or viejas_ponderaciones[codigo]['spread_diff'] != nuevas_ponderaciones[codigo]['spread_diff']
-                #or viejas_ponderaciones[codigo]['spread_premium'] != nuevas_ponderaciones[codigo]['spread_premium']
-                #or viejas_ponderaciones[codigo]['spread_vip'] != nuevas_ponderaciones[codigo]['spread_vip']
-                or viejas_ponderaciones[codigo]['grupos_id'] != nuevas_ponderaciones[codigo]['grupos_id']
-                or viejas_ponderaciones[codigo]['monto_usd'] != nuevas_ponderaciones[codigo]['monto_usd']
-                or viejas_ponderaciones[codigo]['path_instrumento'] != nuevas_ponderaciones[codigo]['path_instrumento']
-                or viejas_ponderaciones[codigo]['path_grupo'] != nuevas_ponderaciones[codigo]['path_grupo']):
-                update.update({codigo:nuevas_ponderaciones[codigo]})
-            else:
-                no_update.update({codigo:nuevas_ponderaciones[codigo]})
-        else:
-            insert.update({codigo:nuevas_ponderaciones[codigo]})
-            
-    return insert, update, no_update
-#! FIN BORRAR 2
 
 def func_grupos_y_simbolos(grupos_reales,grupos_simbolos):
     #Une los grupos reales con los grupos de cada simbolo
@@ -339,10 +311,8 @@ def func_spread_categoria(instrumento, categoria, spread_full, spread_diff,tipo_
     return spread
 
 def func_ponderacion(spread_full, spread_diff, spread_categoria):
-    #todo - REVISAR
     #Calcula las Ponderaciones PREMIUM y VIP (que siempre son las mismas)
     
-    #print(spread_full, spread_diff, spread_categoria)
     if (spread_full-spread_diff) > 0:
         ponderacion = round(spread_categoria/(spread_full if spread_full != 0 else spread_full+0.001),3)
     else:
