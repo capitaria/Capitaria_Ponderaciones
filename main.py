@@ -4,9 +4,9 @@ from calculos import *
 from datetime import datetime # para trabajar con fechas
 from time import time as crono # cronometro
 
-# fecha_consultada = datetime.now().date()
-fecha_consultada = '2024-06-21' # Comentar para tomar fecha now().date()
-fecha_consultada = datetime.strptime(fecha_consultada, "%Y-%m-%d").date() # Comentar para tomar fecha now().date()
+fecha_consultada = datetime.now().date()
+# fecha_consultada = '2024-07-08' # Comentar para tomar fecha now().date()
+# fecha_consultada = datetime.strptime(fecha_consultada, "%Y-%m-%d").date() # Comentar para tomar fecha now().date()
 nombre_dia_semana = fecha_consultada.strftime("%A")
 numero_dia_semana  = fecha_consultada.weekday() + 1 # 1 para Lunes / 7 para Domingo
 
@@ -50,9 +50,9 @@ if numero_dia_semana <= 5:
             
             # #^ Inserta (tabla historica) y Actualiza (tabla mensual) en la Base de Datos
             func_ins_datos_ponderados_diarios(conexion, nuevas_ponderaciones) #* insert PSQL / py_rp_ponderacionxsymbol
-            # func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones) #* insert PSQL / py_rp_ponderacionxsymbol_historical
-            # if fecha_consultada == fecha_prox_mes_fiscal_correcta: # Se inserta cuando es cierre de mes
-            #     func_ins_datos_ponderados(conexion, nuevas_ponderaciones) #* Insert PSQL / py_rp_ponderacionxsymbol_update_fiscal
+            func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones) #* insert PSQL / py_rp_ponderacionxsymbol_historical
+            if fecha_consultada == fecha_prox_mes_fiscal_correcta: # Se inserta cuando es cierre de mes
+                func_ins_datos_ponderados(conexion, nuevas_ponderaciones) #* Insert PSQL / py_rp_ponderacionxsymbol_update_fiscal
 
                             
             #^ INFO
