@@ -151,8 +151,8 @@ def func_sel_instrumentos_faltantes(conexion, fecha_consultada):
                     ppp.instrumento
                 from
                     python_extract.py_rp_ponderaciones_path ppp
-                where
-                    ppp.path_grupo not in ('START\*','Provisorios\*','*','MarketExecution\*','Alimentadores\*','Acc Chile\*')
+                -- where
+                    -- ppp.path_grupo not in ('START\*','Provisorios\*','*','MarketExecution\*','Alimentadores\*','Acc Chile\*')
             )
     """
     
@@ -236,30 +236,78 @@ def func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes):
     return ponderacion_base
 
 
-def func_sel_monto_moneda_usd(conexion, fecha_consultada):
-    # Obtiene motod dolarizado segun la moneda
+# def func_sel_monto_moneda_usd(conexion, fecha_consultada):
+#     # Obtiene motod dolarizado segun la moneda
+#     cursor = conexion.cursor()
+#     query_monto_moneda_a_usd = f"""
+#     select
+#         usd_price as usdclp,
+#         pen_price as usdpen,
+#         usdcad,
+#         eurusd,
+#         nzdusd,
+#         audusd,
+#         usdjpy,
+#         gbpusd,
+#         usdchf,
+#         usdmxn,
+#         fecha_inicio,
+# 	    fecha_fin
+#     from
+#         processes.pr_fiscal_period 
+#     where
+#         '{fecha_consultada}' between fecha_inicio and fecha_fin
+#     order by
+#         fecha_inicio desc
+#         fetch first 1 row only
+#     """
+#     cursor.execute(query_monto_moneda_a_usd) # Ejecuta la query
+#     query_monto_moneda_a_usd = cursor.fetchall()
+
+#     monto_moneda_a_usd = dict()
+    
+#     for item in query_monto_moneda_a_usd:
+#         usdclp = item[0]
+#         usdpen = item[1]
+#         usdcad = item[2]
+#         eurusd = item[3]
+#         nzdusd = item[4]
+#         audusd = item[5]
+#         usdjpy = item[6]
+#         gbpusd = item[7]
+#         usdchf = item[8]
+#         usdmxn = item[9]
+#         inicio = item[10].strftime("%d-%m-%Y %H:%M:%S")
+#         fin = item[11].strftime("%d-%m-%Y %H:%M:%S")
+#         monto_moneda_a_usd = {
+#             'usdclp' : round(usdclp,5),
+#             'usdpen' : round(usdpen,5),
+#             'usdcad' : round(usdcad,5),
+#             'eurusd' : round(eurusd,5),
+#             'nzdusd' : round(nzdusd,5),
+#             'audusd' : round(audusd,5),
+#             'usdjpy' : round(usdjpy,5),
+#             'gbpusd' : round(gbpusd,5),
+#             'usdchf' : round(usdchf,5),
+#             'usdmxn' : round(usdmxn,5),
+#             'intervalo' : f"{inicio} al {fin}",
+#             }
+        
+#         return monto_moneda_a_usd
+    
+def func_sel_precio_divisas(conexion, fecha_consultada):
+    # Obtiene el precio de las monedas al dia consultado
     cursor = conexion.cursor()
     query_monto_moneda_a_usd = f"""
     select
-        usd_price as usdclp,
-        pen_price as usdpen,
-        usdcad,
-        eurusd,
-        nzdusd,
-        audusd,
-        usdjpy,
-        gbpusd,
-        usdchf,
-        usdmxn,
-        fecha_inicio,
-	    fecha_fin
+        pr.symbol as instrumento,
+        round(((pr.bidlast + pr.asklast)/2)::numeric,4) as precio,
+        TO_CHAR(pr.fecha_insercion, 'YYYY-MM-DD') as fecha_insercion_precio
     from
-        processes.pr_fiscal_period 
+        reports.rp_precios pr
     where
-        '{fecha_consultada}' between fecha_inicio and fecha_fin
-    order by
-        fecha_inicio desc
-        fetch first 1 row only
+        pr.symbol in ('AUDUSD','USDBRL','USDCHF','EURUSD','GBPUSD','USDJPY','NZDUSD','USDCAD','USDCLP')
+        and pr.fecha_insercion::date = '{fecha_consultada}'
     """
     cursor.execute(query_monto_moneda_a_usd) # Ejecuta la query
     query_monto_moneda_a_usd = cursor.fetchall()
@@ -267,35 +315,15 @@ def func_sel_monto_moneda_usd(conexion, fecha_consultada):
     monto_moneda_a_usd = dict()
     
     for item in query_monto_moneda_a_usd:
-        usdclp = item[0]
-        usdpen = item[1]
-        usdcad = item[2]
-        eurusd = item[3]
-        nzdusd = item[4]
-        audusd = item[5]
-        usdjpy = item[6]
-        gbpusd = item[7]
-        usdchf = item[8]
-        usdmxn = item[9]
-        inicio = item[10].strftime("%d-%m-%Y %H:%M:%S")
-        fin = item[11].strftime("%d-%m-%Y %H:%M:%S")
-        monto_moneda_a_usd = {
-            'usdclp' : round(usdclp,5),
-            'usdpen' : round(usdpen,5),
-            'usdcad' : round(usdcad,5),
-            'eurusd' : round(eurusd,5),
-            'nzdusd' : round(nzdusd,5),
-            'audusd' : round(audusd,5),
-            'usdjpy' : round(usdjpy,5),
-            'gbpusd' : round(gbpusd,5),
-            'usdchf' : round(usdchf,5),
-            'usdmxn' : round(usdmxn,5),
-            'intervalo' : f"{inicio} al {fin}",
-            }
+        instrumento = item[0]
+        precio = item[1]
+        fecha = item[2]
+        monto_moneda_a_usd[instrumento] = {
+            'precio': round(float(precio),4),
+            'fecha' : fecha
+        }
         
-        return monto_moneda_a_usd
-    
-
+    return monto_moneda_a_usd
 
 
 def func_sel_grupos_reales(conexion):

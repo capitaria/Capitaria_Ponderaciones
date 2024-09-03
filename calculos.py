@@ -26,7 +26,7 @@ def func_tipo_instrumento(moneda, path):
     elif 'Acciones' in path and 'USD' in moneda:
         tipo_instrumento = 'ACCIONES USA'
     elif 'Acciones' in path and 'CLP' in moneda:
-        tipo_instrumento = 'CFD CHILE'
+        tipo_instrumento = 'ACCIONES CHILE'
     else:
         tipo_instrumento = None
     
@@ -56,57 +56,83 @@ def func_tipo(path):
 
 
 
-def func_monto_usd(moneda, monto_a_usd):
-
-    # Calcula el valor del instrumento por dolar transado
-    if moneda == 'CLP':
-        for key, valor in monto_a_usd.items(): #key: usdclp / valor: 868.35
-            if moneda.lower() in key:
-                calculo_a_monto_usd = valor
-    elif moneda == 'PEN':
-        for key, valor in monto_a_usd.items():
-            if moneda.lower() in key:
-                calculo_a_monto_usd = round(1/float(valor),4)
-    elif moneda == 'CAD':
-        for key, valor in monto_a_usd.items():
-            if moneda.lower() in key:
-                calculo_a_monto_usd = round(1/float(valor),4)
-    elif moneda == 'EUR':
-        for key, valor in monto_a_usd.items():
-            if moneda.lower() in key:
-                calculo_a_monto_usd = round(1/float(valor),4)
-    elif moneda == 'NZD':
-        for key, valor in monto_a_usd.items():
-            if moneda.lower() in key:
-                calculo_a_monto_usd = round(1/float(valor),4)
-    elif moneda == 'AUD':
-        for key, valor in monto_a_usd.items():
-            if moneda.lower() in key:
-                calculo_a_monto_usd = round(1/float(valor),4)
-    elif moneda == 'JPY':
-        for key, valor in monto_a_usd.items():
-            if moneda.lower() in key:
-                calculo_a_monto_usd = round(1/float(valor),4)
-    elif moneda == 'GBP':
-        for key, valor in monto_a_usd.items():
-            if moneda.lower() in key:
-                calculo_a_monto_usd = round(1/float(valor),4)
-    elif moneda == 'CHF':
-        for key, valor in monto_a_usd.items():
-            if moneda.lower() in key:
-                calculo_a_monto_usd = round(1/float(valor),4)
-    elif moneda == 'MXN':
-        for key, valor in monto_a_usd.items():
-            if moneda.lower() in key:
-                calculo_a_monto_usd = round(1/float(valor),4)
-    elif moneda == 'USD':
-        for key, valor in monto_a_usd.items():
-            if moneda.lower() in key:
-                calculo_a_monto_usd = valor/valor
+def func_monto_usd(moneda, monto_moneda_a_usd):
+    if moneda.upper()+'USD' == 'AUDUSD':
+        calculo_a_monto_usd = round(float(monto_moneda_a_usd['AUDUSD']['precio']),4)
+    elif moneda.upper()+'USD' == 'EURUSD':
+        calculo_a_monto_usd = round(float(monto_moneda_a_usd['EURUSD']['precio']),4)
+    elif moneda.upper()+'USD' == 'NZDUSD':
+        calculo_a_monto_usd = round(float(monto_moneda_a_usd['NZDUSD']['precio']),4)
+    elif moneda.upper()+'USD' == 'GBPUSD':
+        calculo_a_monto_usd = round(float(monto_moneda_a_usd['GBPUSD']['precio']),4)
+    elif 'USD'+moneda.upper() == 'USDCLP':
+        calculo_a_monto_usd = round(1/float(monto_moneda_a_usd['USDCLP']['precio']),4)
+    elif 'USD'+moneda.upper() == 'USDCAD':
+        calculo_a_monto_usd = round(1/float(monto_moneda_a_usd['USDCAD']['precio']),4)
+    elif 'USD'+moneda.upper() == 'USDBRL':
+        calculo_a_monto_usd = round(1/float(monto_moneda_a_usd['USDBRL']['precio']),4)
+    elif 'USD'+moneda.upper() == 'USDCHF':
+        calculo_a_monto_usd = round(1/float(monto_moneda_a_usd['USDCHF']['precio']),4)
+    elif 'USD'+moneda.upper() == 'USDJPY':
+        calculo_a_monto_usd = round(1/float(monto_moneda_a_usd['USDJPY']['precio']),4)
+    elif moneda.upper() == 'PENNY':
+        calculo_a_monto_usd = round(float(monto_moneda_a_usd['GBPUSD']['precio'])/100,4)
+    elif moneda.upper() == 'USD':
+        calculo_a_monto_usd = 1.0000
     else:
-        calculo_a_monto_usd = None
+        calculo_a_monto_usd = 0
     
     return calculo_a_monto_usd
+    
+    # # Calcula el valor del instrumento por dolar transado
+    # if moneda == 'CLP':
+    #     for key, valor in monto_a_usd.items(): #key: usdclp / valor: 868.35
+    #         if moneda.lower() in key:
+    #             calculo_a_monto_usd = valor
+    # elif moneda == 'PEN':
+    #     for key, valor in monto_a_usd.items():
+    #         if moneda.lower() in key:
+    #             calculo_a_monto_usd = round(1/float(valor),4)
+    # elif moneda == 'CAD':
+    #     for key, valor in monto_a_usd.items():
+    #         if moneda.lower() in key:
+    #             calculo_a_monto_usd = round(1/float(valor),4)
+    # elif moneda == 'EUR':
+    #     for key, valor in monto_a_usd.items():
+    #         if moneda.lower() in key:
+    #             calculo_a_monto_usd = round(1/float(valor),4)
+    # elif moneda == 'NZD':
+    #     for key, valor in monto_a_usd.items():
+    #         if moneda.lower() in key:
+    #             calculo_a_monto_usd = round(1/float(valor),4)
+    # elif moneda == 'AUD':
+    #     for key, valor in monto_a_usd.items():
+    #         if moneda.lower() in key:
+    #             calculo_a_monto_usd = round(1/float(valor),4)
+    # elif moneda == 'JPY':
+    #     for key, valor in monto_a_usd.items():
+    #         if moneda.lower() in key:
+    #             calculo_a_monto_usd = round(1/float(valor),4)
+    # elif moneda == 'GBP':
+    #     for key, valor in monto_a_usd.items():
+    #         if moneda.lower() in key:
+    #             calculo_a_monto_usd = round(1/float(valor),4)
+    # elif moneda == 'CHF':
+    #     for key, valor in monto_a_usd.items():
+    #         if moneda.lower() in key:
+    #             calculo_a_monto_usd = round(1/float(valor),4)
+    # elif moneda == 'MXN':
+    #     for key, valor in monto_a_usd.items():
+    #         if moneda.lower() in key:
+    #             calculo_a_monto_usd = round(1/float(valor),4)
+    # elif moneda == 'USD':
+    #     for key, valor in monto_a_usd.items():
+    #         if moneda.lower() in key:
+    #             calculo_a_monto_usd = valor/valor
+    # else:
+    #     calculo_a_monto_usd = None
+    
+    # return calculo_a_monto_usd
 
 
 def func_ponderaciones_campos_no_calculados(ponderacion_base):

@@ -6,9 +6,15 @@ from calculos import *
 from datetime import datetime # para trabajar con fechas
 from time import time as crono # cronometro
 
+<<<<<<< HEAD
 # fecha_consultada = '2024-08-30' # Comentar para tomar fecha now().date()
 # fecha_consultada = datetime.strptime(fecha_consultada, "%Y-%m-%d").date() # Comentar para tomar fecha now().date()
 fecha_consultada = datetime.now().date()
+=======
+# fecha_consultada = datetime.now().date()
+fecha_consultada = '2024-07-10' # Comentar para tomar fecha now().date()
+fecha_consultada = datetime.strptime(fecha_consultada, "%Y-%m-%d").date() # Comentar para tomar fecha now().date()
+>>>>>>> c31696e4d8355fc03266702d24f07b922bf9a18b
 nombre_dia_semana = fecha_consultada.strftime("%A")
 numero_dia_semana  = fecha_consultada.weekday() + 1 # 1 para Lunes / 7 para Domingo
 
@@ -36,7 +42,8 @@ if numero_dia_semana <= 5:
             
             #^ Crea los instrumentos faltantes
             instrumentos_faltantes = func_sel_instrumentos_faltantes(conexion,fecha_consultada) #& modificar instrumentos
-            monto_moneda_a_usd = func_sel_monto_moneda_usd(conexion, fecha_consultada)
+            # monto_moneda_a_usd = func_sel_monto_moneda_usd(conexion, fecha_consultada) #! Esto servia de forma mensual
+            monto_moneda_a_usd = func_sel_precio_divisas(conexion, fecha_consultada)
             ponderacion_base = func_sel_generacion_data_base_mt5(conexion,instrumentos_faltantes)
             nuevas_ponderaciones = func_ponderaciones_campos_no_calculados(ponderacion_base)
             nuevas_ponderaciones = func_ponderaciones_campos_calculados(nuevas_ponderaciones,instrumentos_faltantes,monto_moneda_a_usd)
@@ -52,7 +59,7 @@ if numero_dia_semana <= 5:
             
             #^ Inserta (tabla historica) y Actualiza (tabla mensual) en la Base de Datos
             func_ins_datos_ponderados_diarios(conexion, nuevas_ponderaciones) #* insert PSQL / py_rp_ponderacionxsymbol
-            func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones) #* insert PSQL / py_rp_ponderacionxsymbol_historical
+            #func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones) #* insert PSQL / py_rp_ponderacionxsymbol_historical
             if fecha_consultada == fecha_prox_mes_fiscal_correcta: # Se inserta cuando es cierre de mes
                 func_ins_datos_ponderados(conexion, nuevas_ponderaciones) #* Insert PSQL / py_rp_ponderacionxsymbol_update_fiscal
 
@@ -64,7 +71,6 @@ if numero_dia_semana <= 5:
             print(f"Fecha Consultada: {fecha_consultada}")
             print(f"Fecha Proximo Mes Fiscal: {fecha_prox_mes_fiscal_correcta}")
             print(f'************************************************')
-            
     except psql().Error as e:
         print("Error al conectar a la base de datos PostgreSQL: {}".format(e))
     finally:
