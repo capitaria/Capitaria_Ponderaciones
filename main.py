@@ -1,12 +1,14 @@
+###### PONDERACIONES ######
+
 from con.connection import psql
 from querys import *
 from calculos import *
 from datetime import datetime # para trabajar con fechas
 from time import time as crono # cronometro
 
-fecha_consultada = datetime.now().date()
-# fecha_consultada = '2024-07-08' # Comentar para tomar fecha now().date()
+# fecha_consultada = '2024-08-30' # Comentar para tomar fecha now().date()
 # fecha_consultada = datetime.strptime(fecha_consultada, "%Y-%m-%d").date() # Comentar para tomar fecha now().date()
+fecha_consultada = datetime.now().date()
 nombre_dia_semana = fecha_consultada.strftime("%A")
 numero_dia_semana  = fecha_consultada.weekday() + 1 # 1 para Lunes / 7 para Domingo
 
@@ -48,7 +50,7 @@ if numero_dia_semana <= 5:
             #^ Junta las Nuevas Ponderaciones con la Agrupacion dejando un Codigo unico
             nuevas_ponderaciones = func_agregar_spread_ponderaciones_premium_vip(nuevas_ponderaciones, agrupacion)
             
-            # #^ Inserta (tabla historica) y Actualiza (tabla mensual) en la Base de Datos
+            #^ Inserta (tabla historica) y Actualiza (tabla mensual) en la Base de Datos
             func_ins_datos_ponderados_diarios(conexion, nuevas_ponderaciones) #* insert PSQL / py_rp_ponderacionxsymbol
             func_ins_datos_ponderados_historicos(conexion, nuevas_ponderaciones) #* insert PSQL / py_rp_ponderacionxsymbol_historical
             if fecha_consultada == fecha_prox_mes_fiscal_correcta: # Se inserta cuando es cierre de mes
