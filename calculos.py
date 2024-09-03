@@ -55,7 +55,6 @@ def func_tipo(path):
     return tipo
 
 
-
 def func_monto_usd(moneda, monto_moneda_a_usd):
     if moneda.upper()+'USD' == 'AUDUSD':
         calculo_a_monto_usd = round(float(monto_moneda_a_usd['AUDUSD']['precio']),4)
@@ -83,56 +82,6 @@ def func_monto_usd(moneda, monto_moneda_a_usd):
         calculo_a_monto_usd = 0
     
     return calculo_a_monto_usd
-    
-    # # Calcula el valor del instrumento por dolar transado
-    # if moneda == 'CLP':
-    #     for key, valor in monto_a_usd.items(): #key: usdclp / valor: 868.35
-    #         if moneda.lower() in key:
-    #             calculo_a_monto_usd = valor
-    # elif moneda == 'PEN':
-    #     for key, valor in monto_a_usd.items():
-    #         if moneda.lower() in key:
-    #             calculo_a_monto_usd = round(1/float(valor),4)
-    # elif moneda == 'CAD':
-    #     for key, valor in monto_a_usd.items():
-    #         if moneda.lower() in key:
-    #             calculo_a_monto_usd = round(1/float(valor),4)
-    # elif moneda == 'EUR':
-    #     for key, valor in monto_a_usd.items():
-    #         if moneda.lower() in key:
-    #             calculo_a_monto_usd = round(1/float(valor),4)
-    # elif moneda == 'NZD':
-    #     for key, valor in monto_a_usd.items():
-    #         if moneda.lower() in key:
-    #             calculo_a_monto_usd = round(1/float(valor),4)
-    # elif moneda == 'AUD':
-    #     for key, valor in monto_a_usd.items():
-    #         if moneda.lower() in key:
-    #             calculo_a_monto_usd = round(1/float(valor),4)
-    # elif moneda == 'JPY':
-    #     for key, valor in monto_a_usd.items():
-    #         if moneda.lower() in key:
-    #             calculo_a_monto_usd = round(1/float(valor),4)
-    # elif moneda == 'GBP':
-    #     for key, valor in monto_a_usd.items():
-    #         if moneda.lower() in key:
-    #             calculo_a_monto_usd = round(1/float(valor),4)
-    # elif moneda == 'CHF':
-    #     for key, valor in monto_a_usd.items():
-    #         if moneda.lower() in key:
-    #             calculo_a_monto_usd = round(1/float(valor),4)
-    # elif moneda == 'MXN':
-    #     for key, valor in monto_a_usd.items():
-    #         if moneda.lower() in key:
-    #             calculo_a_monto_usd = round(1/float(valor),4)
-    # elif moneda == 'USD':
-    #     for key, valor in monto_a_usd.items():
-    #         if moneda.lower() in key:
-    #             calculo_a_monto_usd = valor/valor
-    # else:
-    #     calculo_a_monto_usd = None
-    
-    # return calculo_a_monto_usd
 
 
 def func_ponderaciones_campos_no_calculados(ponderacion_base):
